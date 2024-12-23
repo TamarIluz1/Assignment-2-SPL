@@ -6,11 +6,14 @@ import java.util.Vector;
  * Implements the Singleton pattern to ensure a single instance of FusionSlam exists.
  */
 public class FusionSlam {
-    // Singleton instance holder
+   
+    LandMark[] landmarks;
+    Vector<Pose> poses;
 
     private FusionSlam() {
 
     }
+     // Singleton instance holder
     public static FusionSlam getInstance() {
         return FusionSlamHolder.instance;
     }
@@ -19,6 +22,5 @@ public class FusionSlam {
         private static final FusionSlam instance = new FusionSlam();
     }
     
-    LandMark[] landmarks;
-    Vector<Pose> poses;
+
 }

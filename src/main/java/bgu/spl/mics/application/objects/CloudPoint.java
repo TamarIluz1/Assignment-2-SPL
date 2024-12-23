@@ -7,6 +7,22 @@ package bgu.spl.mics.application.objects;
 public class CloudPoint {
 
     // TODO: Define fields and methods.
-    int x;
-    int y;
+    private final int x;
+    private final int y;
+
+    public CloudPoint(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    // Getters and setters (if needed)
+    
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
 }

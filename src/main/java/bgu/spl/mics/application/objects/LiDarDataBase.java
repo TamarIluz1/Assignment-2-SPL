@@ -7,7 +7,11 @@ import java.util.Vector;
  * It provides access to cloud point data and other relevant information for tracked objects.
  */
 public class LiDarDataBase {
-    private static LiDarDataBase instance = null;// i added this line
+
+    private static class LiDarDataBaseHolder {
+        private static LiDarDataBase instance = new LiDarDataBase();
+    }
+
     private Vector<StampedCloudPoints> cloudPoints;// i added this line
 
     /**
@@ -17,11 +21,7 @@ public class LiDarDataBase {
      * @return The singleton instance of LiDarDataBase.
      */
     public static LiDarDataBase getInstance(String filePath) {
-        // TODO: Implement this
-        if(instance == null){
-            instance = new LiDarDataBase();
-        }
-        return instance;
+        return LiDarDataBaseHolder.instance;
     }
 
     // add private meadod to singleton class

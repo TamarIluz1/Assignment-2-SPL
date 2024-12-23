@@ -2,6 +2,7 @@ package bgu.spl.mics;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Vector;
 
 /**
  * The MicroService is an abstract class that any micro-service in the system
@@ -26,7 +27,7 @@ public abstract class MicroService implements Runnable {
     private boolean terminated = false;
     private final String name;
     private final MessageBus messageBus = MessageBusImpl.getInstance();
-    private final Map<Class<? extends Message>, Callback> callbacks = new ConcurrentHashMap<>();// need to check if it is legal
+    private final Map<Class<? extends Message>, Vector<Callback>> callbacks = new ConcurrentHashMap<>();// need to check if it is legal
 
 
     /**
@@ -61,7 +62,8 @@ public abstract class MicroService implements Runnable {
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
         //TODO: implement this.
         messageBus.subscribeEvent(type, this);
-        callbacks.put(type, callback);
+        callbacks.putIfAbsent(type, new Vector<>());
+        callbacks.get(type).add(callback);
  
     }
 
@@ -88,7 +90,8 @@ public abstract class MicroService implements Runnable {
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
         //TODO: implement this.
         messageBus.subscribeBroadcast(type, this);
-        callbacks.put(type, callback);
+        callbacks.putIfAbsent(type, new Vector<>());
+        callbacks.get(type).add(callback);
     }
 
     /**
@@ -132,7 +135,6 @@ public abstract class MicroService implements Runnable {
     protected final <T> void complete(Event<T> e, T result) {
         //TODO: implement this.
         messageBus.complete(e, result);
-
     }
 
     /**
@@ -167,8 +169,13 @@ public abstract class MicroService implements Runnable {
             //TODO: implement this
             try {
                 Message message = messageBus.awaitMessage(this);
-                Callback callback = callbacks.get(message.getClass());
-                callback.call(message);
+                Vector<Callback> callbackList = callbacks.get(message.getClass());
+                if(callbackList != null){
+                    for (Callback callback : callbackList)
+                    {
+                        callback.call(message);
+                    }
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

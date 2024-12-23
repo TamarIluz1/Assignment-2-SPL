@@ -1,7 +1,8 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.objects.Camera;
-
+import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.MicroService;
 
 /**
@@ -13,6 +14,8 @@ import bgu.spl.mics.MicroService;
  */
 public class CameraService extends MicroService {
 
+    private Camera camera;
+
     /**
      * Constructor for CameraService.
      *
@@ -21,6 +24,7 @@ public class CameraService extends MicroService {
     public CameraService(Camera camera) {
         super("camService");
         // TODO Implement this
+        this.camera = camera;
     }
 
     /**
@@ -31,5 +35,8 @@ public class CameraService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
+
+
+
     }
 }

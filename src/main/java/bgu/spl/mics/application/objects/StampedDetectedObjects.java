@@ -7,8 +7,19 @@ import java.util.Vector;
  */
 public class StampedDetectedObjects {
     // TODO: Define fields and methods.
-    private int time;
-    Vector<DetectedObject> detectedObjects;// ask if it needs to be a vector or list
+    private final int time;
+    private final Vector<DetectedObject> detectedObjects;
 
+    public StampedDetectedObjects(Vector<DetectedObject> detectedObjects) {
+        this.time = (int) System.currentTimeMillis();
+        this.detectedObjects = new Vector<>(detectedObjects);
+    }
 
+    public long getTimestamp() {
+        return time;
+    }
+
+    public Vector<DetectedObject> getDetectedObjects() {
+        return new Vector<>(detectedObjects);
+    }
 }
