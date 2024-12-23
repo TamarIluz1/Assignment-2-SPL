@@ -8,7 +8,7 @@ import java.util.Vector;
 public class Camera {
 
     // TODO: Define fields and methods.
-    int id;
+    final int id;
     int  frequency;
     STATUS status;
     Vector<StampedDetectedObjects> detectedObjectsList;
