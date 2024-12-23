@@ -25,11 +25,11 @@ public class MessageBusImpl implements MessageBus {
    }
 
 
-    // Public method to provide access to the singleton instance
-    public static MessageBusImpl getInstance() {
+   // Public method to provide access to the singleton instance
+   public static MessageBusImpl getInstance() {
       // INSTANCE is already initialized
       return SingletonHolder.instance;
-    }
+   }
 
    public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
       eventSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
@@ -57,7 +57,8 @@ public class MessageBusImpl implements MessageBus {
       }
    }
 
-   public <T> Future<T> sendEvent(Event<T> e) {
+   public <T> Future<T> sendEvent(Event<T> e) { 
+      // TODO need to implement round-robin
       ConcurrentLinkedQueue<MicroService> subscribers = eventSubscribers.get(e.getClass());
       if (subscribers != null && !subscribers.isEmpty()) {
          MicroService m = subscribers.poll();
@@ -69,7 +70,7 @@ public class MessageBusImpl implements MessageBus {
             return future;
          }
       }
-      return null;
+       return null;
    }
 
    public void register(MicroService m) {
@@ -87,7 +88,12 @@ public class MessageBusImpl implements MessageBus {
       if (queue == null) {
          throw new IllegalStateException("MicroService is not registered");
       }
-      return queue.take();
+      Message m1 = null;
+      while(m1 == null) {
+         m1 = queue.take();
+         m.wait(); // waiting for the future to be resolved
+      }
+      return m1;
    }
    
 }

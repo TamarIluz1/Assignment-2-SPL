@@ -2,6 +2,8 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.TickBroadcast;
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
+
 
 /**
  * TimeService acts as the global timer for the system, broadcasting TickBroadcast messages
@@ -15,7 +17,9 @@ public class TimeService extends MicroService {
      * @param TickTime  The duration of each tick in milliseconds.
      * @param Duration  The total number of ticks before the service terminates.
      */
+
     long TickTime,Duration;
+
     public TimeService(long TickTime, long Duration) {
         super("TimeService");
         // TODO Implement this
@@ -31,23 +35,30 @@ public class TimeService extends MicroService {
     protected void initialize() {
         // TODO Implement this
 
-
-
-        Thread tickThread = new Thread(() -> {
-            int currentTick = 1;
-            while (currentTick <= Duration) {
-                try {
-                    Thread.sleep(TickTime);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-                sendBroadcast(new TickBroadcast(currentTick));
-                currentTick++;
-            }
+        subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
+            System.out.println("TimeService " + getName() + " received TerminateBroadcast");
             terminate();
         });
+
+        // Start a new thread to handle tick broadcasting
+        Thread tickThread = new Thread(() -> {
+        long currentTick = 1;
+        while (currentTick <= Duration) {
+            try {
+                Thread.sleep(TickTime);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+            sendBroadcast(new TickBroadcast(currentTick));
+            System.out.println("TimeService " + getName() + " sent TickBroadcast with tick " + currentTick);
+            currentTick++;
+        }
+        sendBroadcast(new TerminateBroadcast());
+        terminate();
+        });
         tickThread.start();
+
 
 
         // int i=1; // i is the current tick
@@ -61,5 +72,8 @@ public class TimeService extends MicroService {
         //     i++;
         // }
         // terminate();
+
+
+
     }
 }

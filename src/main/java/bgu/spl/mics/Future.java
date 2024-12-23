@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
  * No public constructor is allowed except for the empty constructor.
  */
 public class Future<T> {
-	
+	private Object lock1 = new Object();
 	private T result;
 	private boolean isResolved;
 	
@@ -54,7 +54,7 @@ public class Future<T> {
 		if(!isResolved) {
 			this.result = result;
 			isResolved = true;
-			notifyAll();
+			notifyAll(); 
 		}
 	}
 	

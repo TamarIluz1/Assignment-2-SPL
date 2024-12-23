@@ -2,7 +2,8 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.GPSIMU;
-
+import bgu.spl.mics.application.messages.PoseEvent;
+import bgu.spl.mics.MessageBusImpl;
 /**
  * PoseService is responsible for maintaining the robot's current pose (position and orientation)
  * and broadcasting PoseEvents at every tick.
@@ -27,5 +28,16 @@ public class PoseService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
-    }
+        Thread posThread = new Thread(() -> {
+            while (true) {
+                try {
+                    wait();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+                PoseEvent poseEvent = new PoseEvent(); ///////// need to implement the event
+                sendEvent(poseEvent);
+            }
+        });
 }

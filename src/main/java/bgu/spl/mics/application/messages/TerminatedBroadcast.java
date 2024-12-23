@@ -4,4 +4,14 @@ import bgu.spl.mics.Broadcast;
 
 public class TerminatedBroadcast implements Broadcast{
     // we need to implement in the futare
+
+    public TerminatedBroadcast() {
+    }
+
+    @Override
+    public String toString() {
+        return "TerminatedBroadcast{}";
+    }
+
+    
 }
