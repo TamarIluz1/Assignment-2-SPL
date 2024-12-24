@@ -52,13 +52,13 @@ public class GurionRockRunner {
         // TODO: Start the simulation.
         Gson gson = new Gson();
         
-        try {
-            FileReader reader = new FileReader(args[0]); // user sends the path to the configuration file at run
-            Map<String, Object> config = gson.fromJson(reader, HashMap.class);
-        }
-        catch (JsonIOException | IOException e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     FileReader reader = new FileReader(args[0]); // user sends the path to the configuration file at run
+        //     //Map<String, Object> config = reader.fromJson(reader, HashMap.class);
+        // }
+        // catch (JsonIOException | IOException e) {
+        //     e.printStackTrace();
+        // }
 
        
     }
