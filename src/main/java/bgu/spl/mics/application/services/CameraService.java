@@ -22,7 +22,7 @@ public class CameraService extends MicroService {
      * @param camera The Camera object that this service will use to detect objects.
      */
     public CameraService(Camera camera) {
-        super("camService");
+        super("CameraService");
         // TODO Implement this
         this.camera = camera;
     }

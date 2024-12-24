@@ -10,4 +10,28 @@ public class Pose {
     float y;
     float yaw;
     int time;
+
+    public Pose(float x, float y, float yaw, int time) {
+        this.x = x;
+        this.y = y;
+        this.yaw = yaw;
+        this.time = time;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public float getYaw() {
+        return yaw;
+    }
+
+    public int getTime() {
+        return time;
+    }
+    
 }
