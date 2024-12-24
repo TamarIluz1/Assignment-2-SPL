@@ -16,6 +16,11 @@ public class GPSIMU {
 
     }
 
+    public Pose getPose(){
+        //not realy correct but for the use of the func
+        return PoseList.firstElement();
+    }
+
 
 
 

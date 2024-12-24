@@ -11,6 +11,7 @@ import bgu.spl.mics.application.messages.TickBroadcast;
  */
 public class PoseService extends MicroService {
 
+    private GPSIMU gpsimu;
     /**
      * Constructor for PoseService.
      *
@@ -19,6 +20,7 @@ public class PoseService extends MicroService {
     public PoseService(GPSIMU gpsimu) {
         super("PoseService");
         // TODO Implement this
+        this.gpsimu = gpsimu;
     }
 
 
@@ -39,7 +41,7 @@ public class PoseService extends MicroService {
             //we need to find a way to make it work !!!
             //not working now
             //needs to understand how to use GPSIMU
-            PoseEvent event =  new PoseEvent(0,0,0 ,tickBroadcast.getTick());
+            PoseEvent event =  new PoseEvent(gpsimu.getPose());
             sendEvent(event);
         });
         
