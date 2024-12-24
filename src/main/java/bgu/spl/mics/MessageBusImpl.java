@@ -16,7 +16,7 @@ public class MessageBusImpl implements MessageBus {
    private  Map<Class<? extends Broadcast>, ConcurrentLinkedQueue<MicroService>> broadcastSubscribers;
    private  Map<MicroService, LinkedBlockingQueue<Message>> microServiceQueues;
    private  Map<Event, Future> eventFutures;
-
+   private Object eventSubscribers_l = new Object();
    private MessageBusImpl() {
       eventSubscribers = new ConcurrentHashMap<>();
       broadcastSubscribers = new ConcurrentHashMap<>();
@@ -32,23 +32,29 @@ public class MessageBusImpl implements MessageBus {
    }
 
    public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-      eventSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
-      eventSubscribers.get(type).add(m);
-   }
-
-   public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-      broadcastSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
-      broadcastSubscribers.get(type).add(m);
-   }
-
-   public <T> void complete(Event<T> e, T result) {
-      Future<T> future = eventFutures.get(e);
-      if(future != null) {
-         future.resolve(result);
+      synchronized(eventSubscribers_l) {
+         eventSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
+         eventSubscribers.get(type).add(m);
       }
    }
 
-   public void sendBroadcast(Broadcast b) {
+   public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
+      synchronized(broadcastSubscribers) {
+         broadcastSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
+         broadcastSubscribers.get(type).add(m);
+      }
+   }
+
+   public <T> void complete(Event<T> e, T result) {
+      @SuppressWarnings("unchecked")
+      Future<T> future = (Future<T>) eventFutures.get(e); // TAMARCHECK
+      if(future != null) {
+         future.resolve(result);
+      }
+      //what needs to be checked?
+   }
+
+   public void sendBroadcast(Broadcast b) { // no need to synchronize because the broadcastSubscribers is a ConcurrentHashMap
       ConcurrentLinkedQueue<MicroService> subscribers = broadcastSubscribers.get(b.getClass());
       if(subscribers != null) {
          for(MicroService m : subscribers) {
@@ -59,28 +65,42 @@ public class MessageBusImpl implements MessageBus {
 
    public <T> Future<T> sendEvent(Event<T> e) { 
       // TODO need to implement round-robin
-      ConcurrentLinkedQueue<MicroService> subscribers = eventSubscribers.get(e.getClass());
-      if (subscribers != null && !subscribers.isEmpty()) {
-         MicroService m = subscribers.poll();
-         if (m != null) {
-            microServiceQueues.get(m).add(e);
-            subscribers.add(m);
-            Future<T> future = new Future<>();
-            eventFutures.put(e, future);
-            return future;
+      ConcurrentLinkedQueue<MicroService> subscribers;
+      synchronized(eventSubscribers_l) { // no other thread can access the eventSubscribers while adding subscribers
+         subscribers = eventSubscribers.get(e.getClass());
+         if (subscribers != null && !subscribers.isEmpty()) {
+            MicroService m = subscribers.poll();
+            if (m != null) {
+               synchronized(microServiceQueues) {
+                  microServiceQueues.get(m).add(e);
+               }
+               subscribers.add(m);
+               Future<T> future = new Future<>();
+               eventFutures.put(e, future);
+               return future;
+            }
          }
+          return null;
       }
-       return null;
    }
 
    public void register(MicroService m) {
-      microServiceQueues.putIfAbsent(m, new LinkedBlockingQueue<>());
+      synchronized(microServiceQueues) {
+         microServiceQueues.putIfAbsent(m, new LinkedBlockingQueue<>());
+      }
+      // TODO need to add the microService to the eventSubscribers and broadcastSubscribers??
    }
 
    public void unregister(MicroService m) {
-      microServiceQueues.remove(m);
-      eventSubscribers.values().forEach(queue -> queue.remove(m));
-      broadcastSubscribers.values().forEach(queue -> queue.remove(m)); 
+      synchronized(microServiceQueues) {
+         microServiceQueues.remove(m);
+      }
+      synchronized(eventSubscribers_l) {
+         eventSubscribers.values().forEach(queue -> queue.remove(m));
+      }
+      synchronized(broadcastSubscribers) {
+         broadcastSubscribers.values().forEach(queue -> queue.remove(m));
+      }
    }
 
    public Message awaitMessage(MicroService m) throws InterruptedException {
@@ -90,8 +110,10 @@ public class MessageBusImpl implements MessageBus {
       }
       Message m1 = null;
       while(m1 == null) {
-         m1 = queue.take();
-         m.wait(); // waiting for the future to be resolved
+         synchronized(m){
+            m1 = queue.take();
+            m.wait(); // waiting for the future to be resolved
+         }
       }
       return m1;
    }

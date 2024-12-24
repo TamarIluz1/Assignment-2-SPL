@@ -17,6 +17,7 @@ public class FusionSlam {
     public static FusionSlam getInstance() {
         return FusionSlamHolder.instance;
     }
+
     private static class FusionSlamHolder {
         // TODO: Implement singleton instance logic.
         private static final FusionSlam instance = new FusionSlam();

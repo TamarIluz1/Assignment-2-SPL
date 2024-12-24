@@ -13,6 +13,10 @@ public class Camera {
     STATUS status;
     Vector<StampedDetectedObjects> detectedObjectsList;
 
+    public static Camera fromJson(int id, int frequency) { //FACTORY!
+        return new Camera(id, frequency, STATUS.UP); 
+    }
+
     public Camera(int id, int frequency, STATUS status) {
         this.id = id;
         this.frequency = frequency;

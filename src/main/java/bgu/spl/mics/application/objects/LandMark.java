@@ -17,19 +17,19 @@ public class LandMark {
     }
 
     // Getters and setters (if needed)
-    public String getId() {
+    public synchronized String getId() {
         return id;
     }
 
-    public String getDescription() {
+    public synchronized String getDescription() {
         return description;
     }
 
-    public Vector<CloudPoint> getCoordinates() {
+    public synchronized Vector<CloudPoint> getCoordinates() {
         return new Vector<>(coordinates);
     }
 
-    public void setCoordinates(Vector<CloudPoint> coordinates) {
+    public synchronized void setCoordinates(Vector<CloudPoint> coordinates) {
         this.coordinates.clear();
         this.coordinates.addAll(coordinates);
     }

@@ -4,4 +4,18 @@ import bgu.spl.mics.application.objects.Pose;
 
 public class PoseEvent implements Event<Pose>{
     // we need to implement in the futare
+
+    Pose pose;
+
+    public PoseEvent(){
+        
+    }
+
+    public PoseEvent(Pose pose){
+    }
+
+    public Pose getPose(){
+        return null;
+    }
+
 }

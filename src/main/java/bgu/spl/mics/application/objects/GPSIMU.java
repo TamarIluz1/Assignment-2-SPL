@@ -11,4 +11,9 @@ public class GPSIMU {
     int currentTick;
     STATUS status;
     Vector<Pose> PoseList;
+
+    public GPSIMU(){
+        
+    }
+
 }

@@ -18,8 +18,8 @@ public class PoseService extends MicroService {
     public PoseService(GPSIMU gpsimu) {
         super("Change_This_Name");
         // TODO Implement this
-        
     }
+
 
     /**
      * Initializes the PoseService.
@@ -28,16 +28,17 @@ public class PoseService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
-        Thread posThread = new Thread(() -> {
-            while (true) {
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-                PoseEvent poseEvent = new PoseEvent(); ///////// need to implement the event
-                sendEvent(poseEvent);
-            }
+
+        // Subscribes to TickBroadcast
+        subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
+            // Sends PoseEvent
+            sendEvent(new PoseEvent());
         });
+
+        
+
+        // Terminates the service
+
+        
+    }
 }

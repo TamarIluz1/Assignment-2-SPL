@@ -42,7 +42,7 @@ public class TimeService extends MicroService {
 
         // Start a new thread to handle tick broadcasting
         Thread tickThread = new Thread(() -> {
-        long currentTick = 1;
+        int currentTick = 1;
         while (currentTick <= Duration) {
             try {
                 Thread.sleep(TickTime);
@@ -54,25 +54,10 @@ public class TimeService extends MicroService {
             System.out.println("TimeService " + getName() + " sent TickBroadcast with tick " + currentTick);
             currentTick++;
         }
-        sendBroadcast(new TerminateBroadcast());
+        sendBroadcast(new TerminatedBroadcast());
         terminate();
         });
         tickThread.start();
-
-
-
-        // int i=1; // i is the current tick
-        // while(i<=Duration){
-        //     try {
-        //         Thread.sleep(TickTime);
-        //     } catch (InterruptedException e) {
-        //         e.printStackTrace();
-        //     }
-        //     sendBroadcast(new TickBroadcast(i));
-        //     i++;
-        // }
-        // terminate();
-
 
 
     }
