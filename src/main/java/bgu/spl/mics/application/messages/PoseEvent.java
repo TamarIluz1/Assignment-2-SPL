@@ -7,8 +7,8 @@ public class PoseEvent implements Event<Pose>{
 
     private final Pose pose;
 
-    public PoseEvent(int x, int y,int yaw, int time) {
-        this.pose = new Pose(x,y,yaw,time);    
+    public PoseEvent(Pose pose) {
+        this.pose = pose;    
     }
 
     public Pose getPose(){
