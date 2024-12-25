@@ -17,6 +17,10 @@ public class LiDarWorkerTracker {
 
     public int getFrequency() {
         return frequency;
-    }   
+    }
+    
+    public STATUS getStatus() {
+        return status;
+    }
 }
 

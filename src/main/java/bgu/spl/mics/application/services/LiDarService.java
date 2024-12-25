@@ -6,6 +6,8 @@ import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.TickBroadcast;
+import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.objects.STATUS;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
  * sending TrackedObjectsEvents to the FusionSLAM service.
@@ -38,10 +40,20 @@ public class LiDarService extends MicroService {
 
         messageBus.register(this);
         subscribeBroadcast(TickBroadcast.class, (currentTick)->{
-            if (currentTick.getTick() % LiDarWorkerTracker.getFrequency() == 0) {
-                // LI-DAR worker ready to get new data
-                
+            if (this.LiDarWorkerTracker.getStatus() == STATUS.UP) {
+                if (currentTick.getTick() % LiDarWorkerTracker.getFrequency() == 0) {
+                    // LI-DAR worker ready to get new data
+                    // to be implemented- check if i need to parse 
+                    
+                }
             }
+            else if (this.LiDarWorkerTracker.getStatus() == STATUS.ERROR){
+                // TODO print error message
+            }
+            else{
+                // LiDar worker is down
+            }
+
         });
         Thread lidarThread = new Thread(() -> {
             // TODO Implement this

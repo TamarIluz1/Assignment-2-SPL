@@ -164,6 +164,7 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
+        messageBus.register(this);
         initialize();
         while (!terminated) {
             try {
@@ -180,5 +181,6 @@ public abstract class MicroService implements Runnable {
                 Thread.currentThread().interrupt();
             }
         }
+        messageBus.unregister(this);
     }
 }
