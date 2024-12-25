@@ -166,13 +166,13 @@ public abstract class MicroService implements Runnable {
     public final void run() {
         initialize();
         while (!terminated) {
-            //TODO: implement this
             try {
-                Message message = messageBus.awaitMessage(this);
-                Vector<Callback> callbackList = callbacks.get(message.getClass());
+                Message message = messageBus.awaitMessage(this); // getting specific event to handle
+                Vector<Callback> callbackList = callbacks.get(message.getClass()); 
+                // getting the order list of actions that need to happen according to the event type
                 if(callbackList != null){
-                    for (Callback callback : callbackList)
-                    {
+                    for (Callback callback : callbackList) {
+                    // loops of for each throw exception when the list is modified during the loop
                         callback.call(message);
                     }
                 }

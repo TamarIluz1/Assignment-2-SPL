@@ -3,6 +3,8 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.MessageBus;
+import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 
 /**
@@ -15,7 +17,7 @@ import bgu.spl.mics.MicroService;
 public class CameraService extends MicroService {
 
     private Camera camera;
-
+    private final MessageBus messageBus = MessageBusImpl.getInstance();
     /**
      * Constructor for CameraService.
      *
@@ -35,8 +37,12 @@ public class CameraService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
-
-
+        messageBus.register(this);
+        Thread lidarThread = new Thread(() -> {
+            // TODO sensitive to tickbroadcast- send detectobjectevent according to json file
+            
+        });
+        lidarThread.start();
 
     }
 }

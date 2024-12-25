@@ -1,31 +1,31 @@
 package bgu.spl.mics.application;
 
 import java.io.FileReader;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
+//import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import java.io.IOException;
 
-import bgu.spl.mics.application.objects.Camera;
-import bgu.spl.mics.application.objects.FusionSlam;
+// import bgu.spl.mics.application.objects.Camera;
+// import bgu.spl.mics.application.objects.FusionSlam;
 
-import bgu.spl.mics.MessageBusImpl;
-import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.objects.STATUS;
-import bgu.spl.mics.application.services.CameraService;
-import bgu.spl.mics.application.services.FusionSlamService;
-import bgu.spl.mics.application.services.LiDarService;
-import bgu.spl.mics.application.services.PoseService;
-import bgu.spl.mics.application.services.TimeService;
-import bgu.spl.mics.example.ServiceCreator;
+// import bgu.spl.mics.MessageBusImpl;
+// import bgu.spl.mics.MicroService;
+// import bgu.spl.mics.application.objects.STATUS;
+// import bgu.spl.mics.application.services.CameraService;
+// import bgu.spl.mics.application.services.FusionSlamService;
+// import bgu.spl.mics.application.services.LiDarService;
+// import bgu.spl.mics.application.services.PoseService;
+// import bgu.spl.mics.application.services.TimeService;
+// import bgu.spl.mics.example.ServiceCreator;
 
 
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
-import java.util.List;
+// import com.google.gson.reflect.TypeToken;
+// import java.lang.reflect.Type;
+// import java.util.List;
 
 
 

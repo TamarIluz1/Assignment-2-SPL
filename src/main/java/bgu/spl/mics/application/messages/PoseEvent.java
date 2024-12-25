@@ -12,10 +12,11 @@ public class PoseEvent implements Event<Pose>{
     }
 
     public PoseEvent(Pose pose){
+        this.pose = pose; 
     }
 
     public Pose getPose(){
-        return null;
+        return pose;
     }
 
 }

@@ -15,4 +15,8 @@ public class LiDarWorkerTracker {
     private STATUS status;
     private Vector<TrackedObject> trackedObjectsList;
 
+    public int getFrequency() {
+        return frequency;
+    }   
 }
+

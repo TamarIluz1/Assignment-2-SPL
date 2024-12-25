@@ -110,10 +110,9 @@ public class MessageBusImpl implements MessageBus {
       }
       Message m1 = null;
       while(m1 == null) {
-         synchronized(m){
-            m1 = queue.take();
-            m.wait(); // waiting for the future to be resolved
-         }
+         m1 = queue.take();
+         m.wait(); // waiting for the future to be resolved- getting an event/broadcast
+         
       }
       return m1;
    }
