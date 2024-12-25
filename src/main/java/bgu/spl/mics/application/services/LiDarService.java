@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
+import bgu.spl.mics.application.objects.LiDarDataBase;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
@@ -44,7 +45,7 @@ public class LiDarService extends MicroService {
                 if (currentTick.getTick() % LiDarWorkerTracker.getFrequency() == 0) {
                     // LI-DAR worker ready to get new data
                     // to be implemented- check if i need to parse 
-                    
+                    LiDarDataBase.getNext();
                 }
             }
             else if (this.LiDarWorkerTracker.getStatus() == STATUS.ERROR){

@@ -24,13 +24,13 @@ public class Camera {
         this.detectedObjectsList = new Vector<>();
     }
 
-    public DetectedObject processDetectedObject(String id, String description) {
-        DetectedObject detectedObject = new DetectedObject(id, description);
-        Vector<DetectedObject> detectedObjects = new Vector<>();
-        detectedObjects.add(detectedObject);
-        detectedObjectsList.add(new StampedDetectedObjects(detectedObjects));
-        return detectedObject;
-    }
+    // public DetectedObject processDetectedObject(String id, String description) {
+    //     DetectedObject detectedObject = new DetectedObject(id, description);
+    //     Vector<DetectedObject> detectedObjects = new Vector<>();
+    //     detectedObjects.add(detectedObject);
+    //     detectedObjectsList.add(new StampedDetectedObjects(detectedObjects));
+    //     return detectedObject;
+    // }
 
      // Getters and setters (if needed)
      public int getId() {
@@ -47,6 +47,16 @@ public class Camera {
 
     public Vector<StampedDetectedObjects> getDetectedObjectsList() {
         return detectedObjectsList;
+    }
+
+    public StampedDetectedObjects getDetectedObjectsByTime(int tickTime) {
+        StampedDetectedObjects detectedObjectsByTime = new Vector<>();
+        for (StampedDetectedObjects stampedDetectedObjects : detectedObjectsList) {
+            if (stampedDetectedObjects.getTimestamp() == tickTime) {
+                detectedObjectsByTime.add(stampedDetectedObjects);
+            }
+        }
+        return detectedObjectsByTime;
     }
 
 }
