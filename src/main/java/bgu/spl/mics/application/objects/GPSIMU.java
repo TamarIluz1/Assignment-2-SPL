@@ -13,7 +13,15 @@ public class GPSIMU {
     Vector<Pose> PoseList;
 
     public GPSIMU(){
-        
+
     }
+
+    public Pose getPose(){
+        //not realy correct but for the use of the func
+        return PoseList.firstElement();
+    }
+
+
+
 
 }

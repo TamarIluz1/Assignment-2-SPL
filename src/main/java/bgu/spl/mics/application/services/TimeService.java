@@ -20,6 +20,8 @@ public class TimeService extends MicroService {
 
     long TickTime,Duration;
 
+    
+
     public TimeService(long TickTime, long Duration) {
         super("TimeService");
         // TODO Implement this
