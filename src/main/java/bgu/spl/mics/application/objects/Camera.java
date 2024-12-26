@@ -1,5 +1,11 @@
 package bgu.spl.mics.application.objects;
-import java.util.Vector;
+import java.io.FileReader;
+import java.util.*;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * Represents a camera sensor on the robot.
@@ -45,18 +51,37 @@ public class Camera {
         return status;
     }
 
+    public void setStatus(STATUS status) {
+        this.status = status;
+    }
+
     public Vector<StampedDetectedObjects> getDetectedObjectsList() {
         return detectedObjectsList;
     }
 
-    public StampedDetectedObjects getDetectedObjectsByTime(int tickTime) {
-        StampedDetectedObjects detectedObjectsByTime = new Vector<>();
+    public Vector<DetectedObject> getDetectedObjectsByTime(int discoveryTime) {
+        Vector<DetectedObject> matchingObjects = new Vector<>();
         for (StampedDetectedObjects stampedDetectedObjects : detectedObjectsList) {
-            if (stampedDetectedObjects.getTimestamp() == tickTime) {
-                detectedObjectsByTime.add(stampedDetectedObjects);
+            if (stampedDetectedObjects.getTimestamp() == discoveryTime) {
+                matchingObjects.addAll(stampedDetectedObjects.getDetectedObjects());
             }
         }
-        return detectedObjectsByTime;
+        return matchingObjects; 
     }
 
-}
+
+
+// json files will be vector<stampedDetectedObjects>
+
+public StampedDetectedObjects getNextStampedDetectedObjects(int currentTime) {
+    // Iterate through the detected objects list
+    for (StampedDetectedObjects stampedDetectedObjects : detectedObjectsList) {
+        // Find the first set of objects with a timestamp greater than or equal to the current time
+        if (stampedDetectedObjects.getTimestamp() >= currentTime) {
+            return stampedDetectedObjects;
+        }
+    }
+    // Return null if no matching timestamp is found
+    return null;
+}}
+

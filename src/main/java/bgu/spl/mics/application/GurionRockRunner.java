@@ -1,12 +1,21 @@
 package bgu.spl.mics.application;
 
 import java.io.FileReader;
+import java.util.Comparator;
 //import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
+
 //import java.util.Scanner;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+
+import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.application.objects.StampedDetectedObjects;
+
 import java.io.IOException;
 
 // import bgu.spl.mics.application.objects.Camera;
@@ -61,6 +70,31 @@ public class GurionRockRunner {
         // }
 
        
+    }
+
+
+    public void loadFromJson(String jsonFilePath) throws IOException {
+        Gson gson = new Gson();
+        JsonObject data = gson.fromJson(new FileReader(jsonFilePath), JsonObject.class);
+        JsonArray cameraData = data.getAsJsonArray("camera1");
+
+        for (var entry : cameraData) {
+            JsonObject obj = entry.getAsJsonObject();
+            int time = obj.get("time").getAsInt();
+            JsonArray detectedObjects = obj.getAsJsonArray("detectedObjects");
+
+            Vector<DetectedObject> objects = new Vector<>();
+            for (var detected : detectedObjects) {
+                JsonObject detectedObj = detected.getAsJsonObject();
+                String id = detectedObj.get("id").getAsString();
+                String description = detectedObj.get("description").getAsString();
+                objects.add(new DetectedObject(id, description));
+            }
+            detectedObjectsList.add(new StampedDetectedObjects(time, objects));
+        }
+
+        // Sort by time for sequential access
+        detectedObjectsList.sort(Comparator.comparingInt(StampedDetectedObjects::getTimestamp));
     }
 
 }

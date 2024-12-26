@@ -2,8 +2,13 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
+import bgu.spl.mics.application.messages.CrashedBroadcast;
+
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
+
+import java.util.Vector;
+
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
@@ -39,35 +44,40 @@ public class CameraService extends MicroService {
      */
     @Override
     protected void initialize() {
+        // Register the service with the MessageBus
         messageBus.register(this);
-
+    
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
-            System.out.println("CameraService " + getName() + " received TerminateBroadcast");
+            System.out.println(camera.getId() + " received TerminateBroadcast");
             terminate();
         });
+    
+        // Subscribe to CrashedBroadcast: Handle system-wide crash
+        subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
+            System.out.println(camera.getId() + " received CrashedBroadcast.");
+            terminate();
+        });
+    
 
-        subscribeBroadcast(TickBroadcast.class, (currentTick) -> {
-            // TODO sensitive to tickbroadcast- send detectobjectevent according to json file
+        subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
+            int currentTick = tickBroadcast.getTick();
             if (camera.getStatus() == STATUS.UP) {
-                StampedDetectedObjects newlyDetected = camera.getDetectedObjectsByTime(currentTick.getTick() + camera.getFrequency());
-                //send DetectObjectsEvent
-                // if there are new objects to be sent on this tick
-                for(DetectedObject detectedObject : newlyDetected.getDetectedObjects()){
-                    sendEvent(new DetectObjectsEvent(detectedObject.getId(), detectedObject.getDescripition()));
+                StampedDetectedObjects detectedObjects = camera.getNextStampedDetectedObjects(currentTick+ camera.getFrequency());
+                if (detectedObjects != null && detectedObjects.getTimestamp() <= currentTick) {
+                    // Send a DetectObjectsEvent for each detected object
+                    for (DetectedObject object : detectedObjects.getDetectedObjects()) {
+                        if ("ERROR" == object.getId()) {
+                            // Handle camera error scenario
+                            camera.setStatus(STATUS.ERROR);
+                            sendBroadcast(new CrashedBroadcast(camera.getId(), "Camera error detected at tick " + currentTick));
+                            terminate();
+                            return;
+                        }
+                        sendEvent(new DetectObjectsEvent(object.getId(), object.getDescripition()));
+                    }
                 }
-                
-            }
-            else if (camera.getStatus() == STATUS.ERROR){
-                // TODO print error message
-                // turn off camera
-            }
-            else{
-                // Camera is down
-                System.out.println("Camera is down" + camera.getId());
             }
         });
-        Thread CameraThread = new Thread();
-        CameraThread.start();
-
     }
+    
 }

@@ -14,6 +14,10 @@ public class StampedDetectedObjects {
         this.time = (int) System.currentTimeMillis();
         this.detectedObjects = new Vector<>(detectedObjects);
     }
+    public StampedDetectedObjects(Vector<DetectedObject> detectedObjects, int time) {
+        this.time = time;
+        this.detectedObjects = new Vector<>(detectedObjects);
+    }
 
     public long getTimestamp() {
         return time;

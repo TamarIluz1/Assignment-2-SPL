@@ -4,13 +4,16 @@ import bgu.spl.mics.Broadcast;
 
 public class CrashedBroadcast implements Broadcast{
     // we need to implement in the futare
-
-    public CrashedBroadcast() {
+    int objectID;
+    String message;
+    public CrashedBroadcast(int objectID, String message) {
+        this.objectID = objectID;
+        this.message = message;
     }
 
     @Override
     public String toString() {
-        return "CrashedBroadcast{}";
+        return "CrashedBroadcast of " +objectID + " with message: " + message;
     }
 
     public void print(){
