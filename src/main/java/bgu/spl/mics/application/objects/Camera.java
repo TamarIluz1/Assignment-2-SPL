@@ -43,6 +43,10 @@ public class Camera {
         return id;
     }
 
+    public static Camera getCamera(int Id){ // TODO
+        return new Camera(Id, 0, STATUS.UP);
+    }
+
     public int getFrequency() {
         return frequency;
     }
@@ -57,6 +61,11 @@ public class Camera {
 
     public Vector<StampedDetectedObjects> getDetectedObjectsList() {
         return detectedObjectsList;
+    }
+
+    // to be used in the parsing of the json file camera_data.json
+    public void setDetectedObjectsList(Vector<StampedDetectedObjects> detectedObjectsList) { 
+        this.detectedObjectsList = detectedObjectsList;
     }
 
     public Vector<DetectedObject> getDetectedObjectsByTime(int discoveryTime) {

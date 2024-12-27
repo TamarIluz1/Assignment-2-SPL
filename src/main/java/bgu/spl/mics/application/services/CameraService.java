@@ -7,7 +7,6 @@ import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
 
-import java.util.Vector;
 
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;

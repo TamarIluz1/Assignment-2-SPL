@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.util.Comparator;
 //import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -12,11 +13,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
+import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 
 // import bgu.spl.mics.application.objects.Camera;
 // import bgu.spl.mics.application.objects.FusionSlam;
@@ -59,7 +63,6 @@ public class GurionRockRunner {
         // TODO: Parse configuration file.
         // TODO: Initialize system components and services. also TODO add thread to each created microService
         // TODO: Start the simulation.
-        Gson gson = new Gson();
         
         // try {
         //     FileReader reader = new FileReader(args[0]); // user sends the path to the configuration file at run
@@ -72,29 +75,29 @@ public class GurionRockRunner {
        
     }
 
-
-    public void loadFromJson(String jsonFilePath) throws IOException {
+    public static void camera_data_parser(String[] args) {
         Gson gson = new Gson();
-        JsonObject data = gson.fromJson(new FileReader(jsonFilePath), JsonObject.class);
-        JsonArray cameraData = data.getAsJsonArray("camera1");
+        try  {
+            System.out.println("Current working directory: " + System.getProperty("user.dir"));
 
-        for (var entry : cameraData) {
-            JsonObject obj = entry.getAsJsonObject();
-            int time = obj.get("time").getAsInt();
-            JsonArray detectedObjects = obj.getAsJsonArray("detectedObjects");
-
-            Vector<DetectedObject> objects = new Vector<>();
-            for (var detected : detectedObjects) {
-                JsonObject detectedObj = detected.getAsJsonObject();
-                String id = detectedObj.get("id").getAsString();
-                String description = detectedObj.get("description").getAsString();
-                objects.add(new DetectedObject(id, description));
+            FileReader reader = new FileReader(".\\example_input\\camera_data.json");
+            JsonObject camerasJson = gson.fromJson(reader, JsonObject.class);
+            Type camerasDetected = new TypeToken<Map<String, List<StampedDetectedObjects>>>(){}.getType();
+            Map<String, Vector<StampedDetectedObjects>> camerasDetectedMap = gson.fromJson(reader, camerasDetected);
+            for (Map.Entry<String, Vector<StampedDetectedObjects>> entry : camerasDetectedMap.entrySet()) {
+                Camera camera = new Camera(Integer.parseInt(entry.getKey()), 0); // it will be held in main
+                camera.setDetectedObjectsList(entry.getValue());
             }
-            detectedObjectsList.add(new StampedDetectedObjects(time, objects));
+
+            // }
+        } catch (IOException e) {
+        e.printStackTrace();
         }
 
-        // Sort by time for sequential access
-        detectedObjectsList.sort(Comparator.comparingInt(StampedDetectedObjects::getTimestamp));
+        
     }
+
+
+
 
 }
