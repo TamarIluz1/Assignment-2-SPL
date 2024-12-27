@@ -17,7 +17,9 @@ import com.google.gson.reflect.TypeToken;
 
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
+import bgu.spl.mics.application.objects.STATUS;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -63,41 +65,50 @@ public class GurionRockRunner {
         // TODO: Parse configuration file.
         // TODO: Initialize system components and services. also TODO add thread to each created microService
         // TODO: Start the simulation.
-        
-        // try {
-        //     FileReader reader = new FileReader(args[0]); // user sends the path to the configuration file at run
-        //     //Map<String, Object> config = reader.fromJson(reader, HashMap.class);
-        // }
-        // catch (JsonIOException | IOException e) {
-        //     e.printStackTrace();
-        // }
-
+        Vector<Camera> cameras = new Vector<>();
+        Vector<LiDarWorkerTracker> LiDarWorkers = new Vector<>();
+        config_parser(args);
+        camera_data_parser(args);
        
     }
 
+    public static void config_parser(String[] args){
+        // this file will parse both cameras and lidarWorkers TODO
+        Gson gson = new Gson();
+        try  {
+            System.out.println("Current working directory: " + System.getProperty("user.dir")); // debug purposes
+            Type ParsingType = new TypeToken<List<Camera>>(){}.getType();
+            FileReader reader = new FileReader(".\\example_input\\configuration_file.json");
+            JsonObject camerasJson = gson.fromJson(reader, JsonObject.class);
+            // the config file should create the instances of the cameras and lidarWorkers
+        }
+        catch (IOException e) {
+            e.printStackTrace();}
+    }
+
     public static void camera_data_parser(String[] args) {
+        // the config file should use the cameras, lidarWorkers and update the StampedDetectedObjects field on each
         Gson gson = new Gson();
         try  {
             System.out.println("Current working directory: " + System.getProperty("user.dir"));
 
             FileReader reader = new FileReader(".\\example_input\\camera_data.json");
-            JsonObject camerasJson = gson.fromJson(reader, JsonObject.class);
             Type camerasDetected = new TypeToken<Map<String, List<StampedDetectedObjects>>>(){}.getType();
             Map<String, Vector<StampedDetectedObjects>> camerasDetectedMap = gson.fromJson(reader, camerasDetected);
             for (Map.Entry<String, Vector<StampedDetectedObjects>> entry : camerasDetectedMap.entrySet()) {
-                Camera camera = new Camera(Integer.parseInt(entry.getKey()), 0); // it will be held in main
+                Camera camera = getCamera(Integer.parseInt(entry.getKey()));
                 camera.setDetectedObjectsList(entry.getValue());
             }
 
-            // }
         } catch (IOException e) {
         e.printStackTrace();
         }
 
-        
     }
 
-
-
-
+    public static Camera getCamera(int Id){ // TODO- FROM ARRAY OF CAMERAS
+        return new Camera(Id, 0, STATUS.UP);
+    }
 }
+
+
