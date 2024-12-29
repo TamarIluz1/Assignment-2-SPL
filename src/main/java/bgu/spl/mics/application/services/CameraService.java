@@ -28,6 +28,7 @@ public class CameraService extends MicroService {
     private Camera camera;
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private Future<DetectedObject> future;
+    private StampedDetectedObjects nextDetected;
     /**
      * Constructor for CameraService.
      *
@@ -37,6 +38,7 @@ public class CameraService extends MicroService {
         super("CameraService");
         this.camera = camera;
         future = null;
+        nextDetected = camera.getNextDetectedObjects();
     }
 
     /**
@@ -65,11 +67,15 @@ public class CameraService extends MicroService {
             int currentTick = tickBroadcast.getTick();
             // TODO handle termination- where all objects are detected
             if (camera.getStatus() == STATUS.UP) {
-                StampedDetectedObjects detectedObjects = camera.getNextStampedDetectedObjects(currentTick+ camera.getFrequency());
-                if (detectedObjects != null && detectedObjects.getTimestamp() <= currentTick) {
+                if (nextDetected == null) {
+                    // finished working- no more objects to detect
+                    camera.setStatus(STATUS.DOWN);
+                    terminate();
+                }
+                else if (nextDetected.getTimestamp() <= currentTick + camera.getFrequency()) {
                     // invariant: if one object is an error, the whole service is terminated and the data won't be sent
                     boolean error = false;
-                    for (DetectedObject object : detectedObjects.getDetectedObjects()) {
+                    for (DetectedObject object : nextDetected.getDetectedObjects()) {
                         if ("ERROR" == object.getId()) {
                             // Handle camera error scenario
                             camera.setStatus(STATUS.ERROR);
@@ -79,11 +85,10 @@ public class CameraService extends MicroService {
                         }
                     }
                     if (!error){
-                        DetectObjectsEvent e = new DetectObjectsEvent(currentTick, detectedObjects);
+                        DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
                         sendEvent(e);
-                        
                     }
-
+                    nextDetected = camera.getNextDetectedObjects();
                     complete(this,future); // TODO not sure how to use complete yet.
                 }
             }
