@@ -3,6 +3,7 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.LiDarDataBase;
@@ -45,6 +46,10 @@ public class LiDarService extends MicroService {
         // the thread is automatically registered to the relevant broadcasts and events thanks to its type
         // according to what i understand- the lidar working only happens after recieving the event
         messageBus.register(this);
+        subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
+            System.out.println("recieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
+            terminate();
+        });
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             System.out.println("crashed broadcast" + crashedBroadcast.toString() + "\nrecieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
             terminate();
@@ -65,17 +70,16 @@ public class LiDarService extends MicroService {
             // psuedo code: for each DetectObjectsEvent:
             // 1. TODO get the relevant cloud points from the LiDarDataBase
             // 2. send the detected objects to the FusionSlam service
-            //  The LiDar gets the X’s,Y’s coordinates from the DataBase of them and sends a newTrackedObjectsEvent to the Fusion.
-            // After the LiDar Worker completes the event, it saves the coordinates in the lastObjects variable in DataBase and sends True value to the Camera.
+            //  "The LiDar gets the X’s,Y’s coordinates from the DataBase of them and sends a newTrackedObjectsEvent to the Fusion.
+            // After the LiDar Worker completes the event, it saves the coordinates in the lastObjects variable in DataBase and sends True value to the Camera.""
 
-            // note that according to the invariant, errors come only from the camera service
             // TODO implement termination
             for (DetectedObject o  : detectObjectsEvent.getObjectDetails().getDetectedObjects()){
                 // foreach object found, we will add it to the list of what we can process.
-                //
+                // TODO check if id is ERROR
                 liDarWorkerTracker.addTrackedObject(new TrackedObject(o.getId(),detectObjectsEvent.getTickTime(), o.getDescripition(),liDarWorkerTracker.getCoorCloudPoints(o.getId())));
             }
-            return true;
+            detectObjectsEvent.getFuture().resolve(true);
         });
 
     }

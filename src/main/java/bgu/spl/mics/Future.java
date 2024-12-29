@@ -49,7 +49,7 @@ public class Future<T> {
      */
 	public synchronized void resolve (T result) {
 		//TODO: implement this.
-		
+		// TODO talk NOT SURE ABOUT THIS
 		if(!isResolved) {
 			this.result = result;
 			isResolved = true;

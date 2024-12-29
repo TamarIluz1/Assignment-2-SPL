@@ -70,7 +70,7 @@ public class Camera {
             return null;
         }
     }
-
+}
 
 
 // json files will be vector<stampedDetectedObjects>

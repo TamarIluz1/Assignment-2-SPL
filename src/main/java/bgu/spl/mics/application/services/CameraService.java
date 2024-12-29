@@ -7,7 +7,8 @@ import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
 
-import java.util.concurrent.Future;
+//import java.util.concurrent.Future;
+import bgu.spl.mics.Future;
 
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
@@ -27,7 +28,6 @@ public class CameraService extends MicroService {
 
     private Camera camera;
     private final MessageBus messageBus = MessageBusImpl.getInstance();
-    private Future<DetectedObject> future;
     private StampedDetectedObjects nextDetected;
     /**
      * Constructor for CameraService.
@@ -37,9 +37,10 @@ public class CameraService extends MicroService {
     public CameraService(Camera camera) {
         super("CameraService");
         this.camera = camera;
-        future = null;
         nextDetected = camera.getNextDetectedObjects();
     }
+
+
 
     /**
      * Initializes the CameraService.
@@ -52,13 +53,13 @@ public class CameraService extends MicroService {
         messageBus.register(this);
     
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
-            System.out.println(camera.getId() + " received TerminateBroadcast");
+            System.out.println(camera.getId() + " camera received TerminateBroadcast");
             terminate();
         });
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            System.out.println(camera.getId() + " received CrashedBroadcast.");
+            System.out.println(camera.getId() + " camera received CrashedBroadcast.");
             terminate();
         });
     
@@ -74,7 +75,6 @@ public class CameraService extends MicroService {
                 }
                 else if (nextDetected.getTimestamp() <= currentTick + camera.getFrequency()) {
                     // invariant: if one object is an error, the whole service is terminated and the data won't be sent
-                    boolean error = false;
                     for (DetectedObject object : nextDetected.getDetectedObjects()) {
                         if ("ERROR" == object.getId()) {
                             // Handle camera error scenario
@@ -82,14 +82,14 @@ public class CameraService extends MicroService {
                             sendBroadcast(new CrashedBroadcast(camera.getId(), "Camera error detected at tick " + currentTick));
                             terminate();
                             return;
+                            // TODO is this enough?
                         }
                     }
-                    if (!error){
-                        DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
-                        sendEvent(e);
-                    }
+                    DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
+                    Future<Boolean> future = sendEvent(e);
+
+                    complete(e,future.get()); // waiting until the event is resolved
                     nextDetected = camera.getNextDetectedObjects();
-                    complete(this,future); // TODO not sure how to use complete yet.
                 }
             }
         });

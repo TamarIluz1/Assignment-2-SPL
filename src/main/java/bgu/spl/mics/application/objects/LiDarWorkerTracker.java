@@ -42,7 +42,7 @@ public class LiDarWorkerTracker {
 
     public CloudPoint[] getCoorCloudPoints(String objectID){
         // TODO implement
-        // psuedo code: for each TrackedObject in lastTrackedObjects: to get the coordinates of the object from the json file
+        // psuedo code: for each TrackedObject in lastTrackedObjects: to get the coordinates of the object from the dataBase
     }
 
     public void addTrackedObject(TrackedObject trackedObject){
