@@ -7,6 +7,7 @@ import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
 
+import java.util.concurrent.Future;
 
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
@@ -26,6 +27,7 @@ public class CameraService extends MicroService {
 
     private Camera camera;
     private final MessageBus messageBus = MessageBusImpl.getInstance();
+    private Future<DetectedObject> future;
     /**
      * Constructor for CameraService.
      *
@@ -34,6 +36,7 @@ public class CameraService extends MicroService {
     public CameraService(Camera camera) {
         super("CameraService");
         this.camera = camera;
+        future = null;
     }
 
     /**
@@ -60,10 +63,12 @@ public class CameraService extends MicroService {
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             int currentTick = tickBroadcast.getTick();
+            // TODO handle termination- where all objects are detected
             if (camera.getStatus() == STATUS.UP) {
                 StampedDetectedObjects detectedObjects = camera.getNextStampedDetectedObjects(currentTick+ camera.getFrequency());
                 if (detectedObjects != null && detectedObjects.getTimestamp() <= currentTick) {
-                    // Send a DetectObjectsEvent for each detected object
+                    // invariant: if one object is an error, the whole service is terminated and the data won't be sent
+                    boolean error = false;
                     for (DetectedObject object : detectedObjects.getDetectedObjects()) {
                         if ("ERROR" == object.getId()) {
                             // Handle camera error scenario
@@ -72,8 +77,14 @@ public class CameraService extends MicroService {
                             terminate();
                             return;
                         }
-                        sendEvent(new DetectObjectsEvent(object.getId(), object.getDescripition()));
                     }
+                    if (!error){
+                        DetectObjectsEvent e = new DetectObjectsEvent(currentTick, detectedObjects);
+                        sendEvent(e);
+                        
+                    }
+
+                    complete(this,future); // TODO not sure how to use complete yet.
                 }
             }
         });

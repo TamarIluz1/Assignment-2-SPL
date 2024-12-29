@@ -2,23 +2,24 @@ package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
 import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.application.objects.StampedDetectedObjects;
 
 public class DetectObjectsEvent implements Event<DetectedObject>{    
     // we need to implement in the futare
 
-    private final String objectId;
-    private final String objectDetails;
+    private final int tickTime;
+    private final StampedDetectedObjects objectDetails;
 
-    public DetectObjectsEvent(String objectId, String objectDetails) {
-        this.objectId = objectId;
+    public DetectObjectsEvent(int tickTime, StampedDetectedObjects objectDetails) {
+        this.tickTime = tickTime;
         this.objectDetails = objectDetails;
     }
 
-    public String getObjectId() {
-        return objectId;
+    public int getTickTime() {
+        return tickTime;
     }
 
-    public String getObjectDetails() {
+    public StampedDetectedObjects getObjectDetails() {
         return objectDetails;
     }
 

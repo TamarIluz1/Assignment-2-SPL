@@ -6,7 +6,6 @@ import java.util.Vector;
  * Includes the time of detection and a list of detected objects.
  */
 public class StampedDetectedObjects {
-    // TODO: Define fields and methods.
     private final int time;
     private final Vector<DetectedObject> detectedObjects;
 

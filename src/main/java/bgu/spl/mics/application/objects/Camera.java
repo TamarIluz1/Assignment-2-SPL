@@ -12,8 +12,6 @@ import com.google.gson.JsonObject;
  * Responsible for detecting objects in the environment.
  */
 public class Camera {
-
-    // TODO: Define fields and methods.
     final int id;
     int  frequency;
     STATUS status;
@@ -29,14 +27,6 @@ public class Camera {
         this.status = status;
         this.detectedObjectsList = new Vector<>();
     }
-
-    // public DetectedObject processDetectedObject(String id, String description) {
-    //     DetectedObject detectedObject = new DetectedObject(id, description);
-    //     Vector<DetectedObject> detectedObjects = new Vector<>();
-    //     detectedObjects.add(detectedObject);
-    //     detectedObjectsList.add(new StampedDetectedObjects(detectedObjects));
-    //     return detectedObject;
-    // }
 
      // Getters and setters (if needed)
      public int getId() {
@@ -68,15 +58,15 @@ public class Camera {
         this.detectedObjectsList = detectedObjectsList;
     }
 
-    public Vector<DetectedObject> getDetectedObjectsByTime(int discoveryTime) {
-        Vector<DetectedObject> matchingObjects = new Vector<>();
-        for (StampedDetectedObjects stampedDetectedObjects : detectedObjectsList) {
-            if (stampedDetectedObjects.getTimestamp() == discoveryTime) {
-                matchingObjects.addAll(stampedDetectedObjects.getDetectedObjects());
-            }
-        }
-        return matchingObjects; 
-    }
+    // public Vector<DetectedObject> getDetectedObjectsByTime(int discoveryTime) {
+    //     Vector<DetectedObject> matchingObjects = new Vector<>();
+    //     for (StampedDetectedObjects stampedDetectedObjects : detectedObjectsList) {
+    //         if (stampedDetectedObjects.getTimestamp() == discoveryTime) {
+    //             matchingObjects.addAll(stampedDetectedObjects.getDetectedObjects());
+    //         }
+    //     }
+    //     return matchingObjects; 
+    // }
 
 
 
