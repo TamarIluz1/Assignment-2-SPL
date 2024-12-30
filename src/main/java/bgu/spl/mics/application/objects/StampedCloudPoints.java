@@ -8,7 +8,15 @@ import java.util.Vector;
  */
 public class StampedCloudPoints {
     // TODO: Define fields and methods.
-    private int id;
+    private String id; //CHANGED BY NOAM 30/12
     private int time;
     Vector<CloudPoint> cloudPoints;// thet saied listof list of type floats
+
+    public String getId(){
+        return id;
+    }
+
+    public int getTime(){
+        return time;
+    }
 }

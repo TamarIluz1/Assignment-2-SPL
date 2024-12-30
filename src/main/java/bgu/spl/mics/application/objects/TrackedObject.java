@@ -21,4 +21,8 @@ public class TrackedObject {
     public int getTime() {
         return time;
     }
+
+    public String getId() {
+        return id;
+    }
 }

@@ -69,7 +69,8 @@ public class GurionRockRunner {
         Vector<LiDarWorkerTracker> LiDarWorkers = new Vector<>();
         config_parser(args);
         camera_data_parser(args);
-       
+        // lotem - send the amount of each sensor to slam in order to follow terminations
+       // init the thread of timeservice last (according to lotem)
     }
 
     public static void config_parser(String[] args){

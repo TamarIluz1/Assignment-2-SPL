@@ -1,5 +1,5 @@
 package bgu.spl.mics.application.objects;
-
+import bgu.spl.mics.application.objects.LiDarDataBase;
 import java.util.Vector;
 
 /**
@@ -43,6 +43,10 @@ public class LiDarWorkerTracker {
     public CloudPoint[] getCoorCloudPoints(String objectID){
         // TODO implement
         // psuedo code: for each TrackedObject in lastTrackedObjects: to get the coordinates of the object from the dataBase
+    }
+
+    public Vector<StampedCloudPoints> fetchByTime(int tickTime){
+        return LiDarDataBase.getInstance("TODO").fetchByTime(tickTime); //TODO why we need filepath
     }
 
     public void addTrackedObject(TrackedObject trackedObject){
