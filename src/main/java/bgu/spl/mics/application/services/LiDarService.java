@@ -66,6 +66,7 @@ public class LiDarService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, (currentTick)->{
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             Vector<StampedCloudPoints>  newlyTracked = liDarWorkerTracker.fetchByTime(currentTick.getTick() + liDarWorkerTracker.getFrequency());
+            Vector<TrackedObject> trackedObjects = new Vector<>();
             for (StampedCloudPoints p : newlyTracked){
                 if (p.getId() == "ERROR"){
                     sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId() , "lidar recieved Error, CRASHED at tick " + currentTick.getTick()));
@@ -80,13 +81,13 @@ public class LiDarService extends MicroService {
                         // the event exists
                         DetectObjectsEvent e = detectedEventsToProcess.get(p.getId());
                         
-
+                        trackedObjects.add(new TrackedObject(e., 0, getName(), null)) //TODO NOAM
 
                     }
                 }
-
-
             }
+            sendEvent(new TrackedObjectsEvent(null, currentTick.getTick()));
+
         });
 
 
