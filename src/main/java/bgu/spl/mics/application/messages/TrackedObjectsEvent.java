@@ -19,7 +19,7 @@ public class TrackedObjectsEvent implements Event<Boolean>{
 
     private final Vector<TrackedObject> trackedObjects; // TODO not sure if we need to use vector- instructions say list
     private final int tickTime;
-    private CompletableFuture<Boolean> future = new CompletableFuture<>();
+    private Future<Boolean> future = new Future<>();
     
     public TrackedObjectsEvent(Vector<TrackedObject> trackedObjects, int tickTime){
         this.trackedObjects = trackedObjects;
@@ -37,7 +37,7 @@ public class TrackedObjectsEvent implements Event<Boolean>{
 	@Override
 	public void complete() {
 		// TODO Auto-generated method stub
-        future.complete(true);
+        future.resolve(true);
 	}
 
 
