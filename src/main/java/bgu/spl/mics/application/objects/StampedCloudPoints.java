@@ -19,4 +19,8 @@ public class StampedCloudPoints {
     public int getTime(){
         return time;
     }
+
+    public Vector<CloudPoint> getCloudPoints(){
+        return cloudPoints;
+    }
 }

@@ -30,6 +30,7 @@ public class LiDarService extends MicroService {
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private final LiDarWorkerTracker liDarWorkerTracker;
     private HashMap<String, DetectObjectsEvent> detectedEventsToProcess;
+    private HashMap<String, DetectedObject> objectsToProcess;
     /**
      * Constructor for LiDarService.
      *
@@ -38,7 +39,8 @@ public class LiDarService extends MicroService {
     public LiDarService(LiDarWorkerTracker liDarWorkerTracker) {
         super("LidarService");
         this.liDarWorkerTracker = liDarWorkerTracker;
-        detectedEventsToProcess = new HashMap<String, DetectObjectsEvent>();
+        //detectedEventsToProcess = new HashMap<String, DetectObjectsEvent>();
+        objectsToProcess = new HashMap<String, DetectedObject>();
     }
 
     /**
@@ -65,71 +67,40 @@ public class LiDarService extends MicroService {
 
         subscribeBroadcast(TickBroadcast.class, (currentTick)->{
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
-            Vector<StampedCloudPoints>  newlyTracked = liDarWorkerTracker.fetchByTime(currentTick.getTick() + liDarWorkerTracker.getFrequency());
-            Vector<TrackedObject> trackedObjects = new Vector<>();
-            for (StampedCloudPoints p : newlyTracked){
-                if (p.getId() == "ERROR"){
-                    sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId() , "lidar recieved Error, CRASHED at tick " + currentTick.getTick()));
-                    terminate();
-                    return; // TODO WE NEED TO RESOLVE FUTURE OF EVENT?
-                }
-                
-                // otherwise, the frequency is for sure good enough, thus we can try to process the event
-                else{
-                    // search the corresponding event in service map
-                    if (detectedEventsToProcess.containsKey(p.getId())){
-                        // the event exists
-                        DetectObjectsEvent e = detectedEventsToProcess.get(p.getId());
-                        
-                        trackedObjects.add(new TrackedObject(e., 0, getName(), null)) //TODO NOAM
-
+            if (liDarWorkerTracker.getStatus() == STATUS.UP){
+                liDarWorkerTracker.fetchByTime(currentTick.getTick() + liDarWorkerTracker.getFrequency());
+                // TODO understand how and when to terminate
+                Vector<TrackedObject> trackedObjects = new Vector<>();
+                for (TrackedObject p : liDarWorkerTracker.getLastTrackedObjects()){
+                    if (p.getId() == "ERROR"){
+                        sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId() , "lidar recieved Error, CRASHED at tick " + currentTick.getTick()));
+                        terminate();
+                        return; // TODO WE NEED TO RESOLVE FUTURE OF EVENT?
+                    }
+                    
+                    // otherwise, the frequency is for sure good enough, thus we can try to process the event
+                    else{
+                        // search the corresponding event in service map
+                        if (objectsToProcess.containsKey(p.getId())){
+                            // the event exists
+                            DetectedObject e = objectsToProcess.get(p.getId());
+    
+                            trackedObjects.add(new TrackedObject(e.getId(), currentTick.getTick(),e.getDescripition(),p.getCloudPoint())); 
+    
+                        }
                     }
                 }
+                sendEvent(new TrackedObjectsEvent(trackedObjects, currentTick.getTick()));
+    
             }
-            sendEvent(new TrackedObjectsEvent(null, currentTick.getTick()));
 
         });
 
-
-
         subscribeEvent(DetectObjectsEvent.class, (detectObjectsEvent)->{
-            // psuedo code: for each DetectObjectsEvent:
-            // 1. TODO get the relevant cloud points from the LiDarDataBase
-            // 2. send the detected objects to the FusionSlam service
-            //  "The LiDar gets the X’s,Y’s coordinates from the DataBase of them and sends a newTrackedObjectsEvent to the Fusion.
-            // After the LiDar Worker completes the event, it saves the coordinates in the lastObjects variable in DataBase and sends True value to the Camera.""
-
-            // TODO implement termination
-            // for (DetectedObject o  : detectObjectsEvent.getObjectDetails().getDetectedObjects()){
-            //     // foreach object found, we will add it to the list of what we can process.
-            //     // TODO check if id is ERROR
-            //     liDarWorkerTr            // add each trackedObject to the lastObjectsDetected, until 
-            Vector<TrackedObject> toSend = new Vector();
-            for (TrackedObject o: liDarWorkerTracker.getLastTrackedObjects()){
-                if (o.getId() == "ERROR"){
-                    // error in the object, we will not send it to the FusionSlam service
-                    sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId() , "lidar recieved Error, CRASHED at tick " + currentTick.getTick()));
-                    terminate();
-                    return;
-                }
-                else if (o.getTime() <= currentTick.getTick() + liDarWorkerTracker.getFrequency()){
-                    // we will check the corresponding event was recieved from camera 
-                    if (detectedEventsToProcess.get(o.getId()) != null){
-                        // the event was already processed in the camera
-                        DetectObjectsEvent curr = detectedEventsToProcess.get(o.getId());
-
-                    }
-                    // getting couldPoints from the LiDarDataBase
-
-                    toSend.add(o);
-                }
+            for (DetectedObject d : detectObjectsEvent.getObjectDetails().getDetectedObjects()){
+                objectsToProcess.put(d.getId(), d);
             }
-
-            sendEvent(new TrackedObjectsEvent(toSend, currentTick.getTick()));
-
-acker.addTrackedObject(new TrackedObject(o.getId(),detectObjectsEvent.getTickTime(), o.getDescripition(),liDarWorkerTracker.getCoorCloudPoints(o.getId())));
-            // }
-            detectedEventsToProcess.add(detectObjectsEvent);
+            
         });
     }
 }

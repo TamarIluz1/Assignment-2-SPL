@@ -40,18 +40,17 @@ public class LiDarWorkerTracker {
         return lastTrackedObjects;
     }
 
-    public CloudPoint[] getCoorCloudPoints(String objectID){
+    public Vector<CloudPoint> getCoorCloudPoints(String objectID){
         // TODO implement
         // psuedo code: for each TrackedObject in lastTrackedObjects: to get the coordinates of the object from the dataBase
+        return  null;
+
     }
 
-    public Vector<StampedCloudPoints> fetchByTime(int tickTime){
-        return LiDarDataBase.getInstance("TODO").fetchByTime(tickTime); //TODO why we need filepath
+    public void fetchByTime(int tickTime){
+        // add to the database the objects detected at time ticktime
     }
 
-    public void addTrackedObject(TrackedObject trackedObject){
-        lastTrackedObjects.add(trackedObject);
-    }
 
 
 }

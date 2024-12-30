@@ -30,4 +30,10 @@ public class DetectObjectsEvent implements Event<Boolean>{
         return future;
     }
 
+	@Override
+	public void complete() {
+		// TODO Auto-generated method stub
+		throw new UnsupportedOperationException("Unimplemented method 'complete'");
+	}
+
 }
