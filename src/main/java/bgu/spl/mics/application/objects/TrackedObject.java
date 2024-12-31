@@ -1,6 +1,5 @@
 package bgu.spl.mics.application.objects;
 import java.util.Vector;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Represents an object tracked by the LiDAR.

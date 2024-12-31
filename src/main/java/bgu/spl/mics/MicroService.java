@@ -2,6 +2,9 @@ package bgu.spl.mics;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
+
 import java.util.Vector;
 
 /**

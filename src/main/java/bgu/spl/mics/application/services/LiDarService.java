@@ -6,20 +6,15 @@ import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 import bgu.spl.mics.application.objects.DetectedObject;
-import bgu.spl.mics.application.objects.LiDarDataBase;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.TrackedObject;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.TickBroadcast;
-import bgu.spl.mics.MicroService;
 
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
-import org.apache.commons.lang3.tuple.Pair;
 import java.util.Vector;
-import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
  * sending TrackedObjectsEvents to the FusionSLAM service.
@@ -31,8 +26,6 @@ import java.util.HashMap;
 public class LiDarService extends MicroService {
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private final LiDarWorkerTracker liDarWorkerTracker;
-    HashMap<Pair<String, String>, DetectObjectsEvent> detectedEventsToProcess;
-    private HashMap<String, DetectedObject> objectsToProcess;
     /**
      * Constructor for LiDarService.
      *
@@ -41,8 +34,6 @@ public class LiDarService extends MicroService {
     public LiDarService(LiDarWorkerTracker liDarWorkerTracker) {
         super("LidarService");
         this.liDarWorkerTracker = liDarWorkerTracker;
-        detectedEventsToProcess = new HashMap<Pair<String,String>, DetectObjectsEvent>();
-        objectsToProcess = new HashMap<String, DetectedObject>();
     }
 
     /**
@@ -59,18 +50,24 @@ public class LiDarService extends MicroService {
         // according to what i understand- the lidar working only happens after recieving the event
         messageBus.register(this);
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
-            System.out.println("recieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
-            terminate();
+            if (terminateBroadcast.getSender() == "time"){
+                System.out.println("recieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
+                terminate();
+            }
         });
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             System.out.println("crashed broadcast" + crashedBroadcast.toString() + "\nrecieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
+            liDarWorkerTracker.setStatus(STATUS.ERROR);
             terminate();
         });
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             if (liDarWorkerTracker.getStatus() == STATUS.UP){
-                // TODO need to figure out how lidar 
+                if (liDarWorkerTracker.isFinished()){
+                    liDarWorkerTracker.setStatus(STATUS.DOWN);
+                    terminate();
+                }
                 Vector<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsUntilTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
                 Vector<DetectObjectsEvent> handled = new Vector<>();
                 Vector<TrackedObject> newlyTracked = new Vector<>();
@@ -90,6 +87,7 @@ public class LiDarService extends MicroService {
                                 handled.add(e);
                                 curr = new TrackedObject(d.getId(), tickBroadcast.getTick(), d.getDescripition(),s.getCloudPoints());
                                 newlyTracked.add(curr);
+                                liDarWorkerTracker.reportTracked();
                                 e.complete(true);
                                 liDarWorkerTracker.addLastTrackedObject(curr);
                             }

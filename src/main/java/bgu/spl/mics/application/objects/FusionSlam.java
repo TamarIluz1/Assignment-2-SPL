@@ -9,10 +9,14 @@ public class FusionSlam {
    
     Vector<LandMark> landmarks;// changed from [] array to Vector bt tamar 31/12
     Vector<Pose> poses;
-
-    private FusionSlam() {
+    int terminatedCounter; 
+    Object terminatedCounterLock;
+    final int sensorAmount; // TODO init in main
+    private FusionSlam(int sensorAmount) {
         this.landmarks = new Vector<>();
         this.poses = new Vector<>();
+        terminatedCounter = 0;
+        this.sensorAmount = sensorAmount;
 
     }
      // Singleton instance holder
@@ -91,6 +95,23 @@ public class FusionSlam {
     
     public int getNumLandmarks() {
         return landmarks.size();
+    }
+
+    public void reportTracked(){
+        synchronized(terminatedCounterLock){
+            terminatedCounter++;
+        }
+    }
+
+    public boolean isFinished(){
+        synchronized(terminatedCounterLock){
+            if (terminatedCounter == sensorAmount){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
     }
 
 

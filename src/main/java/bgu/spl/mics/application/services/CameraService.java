@@ -53,24 +53,22 @@ public class CameraService extends MicroService {
         messageBus.register(this);
     
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
-            // TODO Implement this
-            //SUBSCRIBE TO TERMINATE BROADCAST 30.12 TAMAR
-            camera.setStatus(STATUS.DOWN);
-            terminate();
+            if (terminateBroadcast.getSender() == "time"){
+                camera.setStatus(STATUS.DOWN);
+                terminate();
+            }
         });
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            // TODO Implement this
-            //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
             System.out.println(camera.getId() + " camera received CrashedBroadcast.");
+            camera.setStatus(STATUS.ERROR);
             terminate();
         });
     
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             int currentTick = tickBroadcast.getTick();
-            // TODO handle termination- where all objects are detected
             if (camera.getStatus() == STATUS.UP) {
                 if (nextDetected == null) {
                     // finished working- no more objects to detect
@@ -86,13 +84,13 @@ public class CameraService extends MicroService {
                             sendBroadcast(new CrashedBroadcast(camera.getId(), "Camera error detected at tick " + currentTick));
                             terminate();
                             return;
-                            // TODO is this enough?
+                            
                         }
                     }
                     DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
                     Future<Boolean> future = sendEvent(e);
-
-                    complete(e,future.get()); // waiting until the event is resolved
+                    
+                    complete(e,future.get()); // waiting until the event is resolved TODO CHECK WITH AHMED
                     nextDetected = camera.getNextDetectedObjects();
                 }
             }

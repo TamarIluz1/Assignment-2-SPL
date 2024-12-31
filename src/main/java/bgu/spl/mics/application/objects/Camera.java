@@ -1,11 +1,7 @@
 package bgu.spl.mics.application.objects;
-import java.io.FileReader;
 import java.util.*;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+;
 
 /**
  * Represents a camera sensor on the robot.

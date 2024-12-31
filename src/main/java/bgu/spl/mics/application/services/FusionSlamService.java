@@ -48,15 +48,17 @@ public class FusionSlamService extends MicroService {
         messageBus.register(this);
     
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
-            // TODO Implement this
-            //SUBSCRIBE TO TERMINATE BROADCAST 30.12 TAMAR
-            terminate();
+            if (terminateBroadcast.getSender() == "time"){
+                terminate();
+            }
+            
         });
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             // TODO Implement this
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
+            
             terminate();
         });
 

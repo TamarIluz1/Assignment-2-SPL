@@ -1,17 +1,9 @@
 package bgu.spl.mics.application.objects;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Type;
 
-import bgu.spl.mics.application.objects.CloudPoint;
 import java.util.Vector;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
-import java.io.FileReader;
 
 /**
  * LiDarDataBase is a singleton class responsible for managing LiDAR data.
@@ -25,6 +17,7 @@ public class LiDarDataBase {
 
     private Vector<StampedCloudPoints> cloudPointsDB;// i added this line
     private int TrackedCounter;
+    Object trackedLock;
 
     /**
      * Returns the singleton instance of LiDarDataBase.
@@ -36,29 +29,11 @@ public class LiDarDataBase {
         return LiDarDataBaseHolder.instance;
     }
 
-    // add private meadod to singleton class TODO explain to noam :)
+    
     private LiDarDataBase() {
         cloudPointsDB = new Vector<>();
         TrackedCounter = 0;
     }
-
-
-
-    public void parseLidarData(String filePath) {
-        // TODO implement
-        try{
-            Gson gson = new Gson();
-            FileReader fileReader = new FileReader(filePath);
-            Type ObjectsDetected = new TypeToken<StampedCloudPoints>(){}.getType(); 
-            StampedCloudPoints stampedCloudPoints = gson.fromJson(fileReader, ObjectsDetected);           
-            cloudPointsDB.add(stampedCloudPoints);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-
-
 
 
     // the things we need to add to lastTrackedObject in lidarworker
@@ -82,11 +57,17 @@ public class LiDarDataBase {
     }
 
     public void reportTracked(){
-        TrackedCounter++;
+        synchronized(trackedLock){
+            TrackedCounter++;
+        }
+        
     }
 
     public boolean isFinishedTracking(){
-        return (TrackedCounter == cloudPointsDB.size());
+        synchronized(trackedLock){
+            return (TrackedCounter == cloudPointsDB.size());
+        }
+        
     }
 
 

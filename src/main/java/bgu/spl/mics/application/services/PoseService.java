@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.objects.GPSIMU;
+import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -32,17 +33,18 @@ public class PoseService extends MicroService {
      */
     @Override
     protected void initialize() {
-        // TODO Implement this
 
         messageBus.register(this);
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
-            // TODO Implement this
-            //SUBSCRIBE TO TERMINATE BROADCAST 30.12 TAMAR
-            terminate();
+            if (terminateBroadcast.getSender() == "time"){
+                gpsimu.setStatus(STATUS.DOWN);
+                terminate();
+            }
         });
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             // TODO Implement this
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
+            gpsimu.setStatus(STATUS.ERROR);
             terminate();
         });
 

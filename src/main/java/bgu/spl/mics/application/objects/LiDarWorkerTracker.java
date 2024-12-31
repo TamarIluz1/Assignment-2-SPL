@@ -1,8 +1,6 @@
 package bgu.spl.mics.application.objects;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
-import bgu.spl.mics.application.objects.LiDarDataBase;
 
-import java.util.List;
 import java.util.Vector;
 
 /**
@@ -68,10 +66,18 @@ public class LiDarWorkerTracker {
         // it was missing a return statement
     }
 
+    public boolean isFinished(){
+        return db.isFinishedTracking();
+    }
+
     public void handleProcessedDetected(Vector<DetectObjectsEvent> events){
         for (DetectObjectsEvent e : events){
             eventsRecieved.remove(e);
         }
+    }
+
+    public void reportTracked(){
+        db.reportTracked();
     }
 
 
