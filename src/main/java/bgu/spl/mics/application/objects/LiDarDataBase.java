@@ -54,11 +54,34 @@ public class LiDarDataBase {
             e.printStackTrace();
         }
     }
-    public Vector<StampedCloudPoints> fetchByTime(int tickTime){
-        // returns only stampedObjects with the time tickTime!! 
-        //TODO
-        return new Vector<>();
+
+
+
+
+
+    // the things we need to add to lastTrackedObject in lidarworker
+    public Vector<StampedCloudPoints> fetchUntilTime(int tickTime){
+        Vector<StampedCloudPoints> toReturn = new Vector<>();
+        for (StampedCloudPoints s: cloudPointsDB){
+            if (s.getTime() == tickTime){
+                toReturn.add(s);
+            }
+        }
+        return toReturn;
     }
+
+    public StampedCloudPoints fetchCloudPoints(int tickTime, String id){
+        for (StampedCloudPoints s : cloudPointsDB){
+            if (s.getId() == id & s.getTime() == tickTime){
+                return s;
+            }
+        }
+        return null;
+    }
+
+
+    
+
 
 
 }

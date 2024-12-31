@@ -31,4 +31,10 @@ public class TrackedObject {
     public Vector<CloudPoint> getCloudPoint(){
         return coordinates;
     }
+
+    public String getDescription() {
+        return description;
+    }
+
+    
 }

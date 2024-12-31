@@ -13,10 +13,13 @@ import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.TickBroadcast;
 import bgu.spl.mics.MicroService;
+
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
-
+import org.apache.commons.lang3.tuple.Pair;
 import java.util.Vector;
+import java.io.ObjectInputFilter.Status;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
@@ -29,7 +32,7 @@ import java.util.HashMap;
 public class LiDarService extends MicroService {
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private final LiDarWorkerTracker liDarWorkerTracker;
-    private HashMap<String, DetectObjectsEvent> detectedEventsToProcess;
+    HashMap<Pair<String, String>, DetectObjectsEvent> detectedEventsToProcess;
     private HashMap<String, DetectedObject> objectsToProcess;
     /**
      * Constructor for LiDarService.
@@ -39,7 +42,7 @@ public class LiDarService extends MicroService {
     public LiDarService(LiDarWorkerTracker liDarWorkerTracker) {
         super("LidarService");
         this.liDarWorkerTracker = liDarWorkerTracker;
-        //detectedEventsToProcess = new HashMap<String, DetectObjectsEvent>();
+        detectedEventsToProcess = new HashMap<Pair<String,String>, DetectObjectsEvent>();
         objectsToProcess = new HashMap<String, DetectedObject>();
     }
 
@@ -65,42 +68,42 @@ public class LiDarService extends MicroService {
             terminate();
         });
 
-        subscribeBroadcast(TickBroadcast.class, (currentTick)->{
+        subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             if (liDarWorkerTracker.getStatus() == STATUS.UP){
-                liDarWorkerTracker.fetchByTime(currentTick.getTick() + liDarWorkerTracker.getFrequency());
-                // TODO understand how and when to terminate
-                Vector<TrackedObject> trackedObjects = new Vector<>();
-                for (TrackedObject p : liDarWorkerTracker.getLastTrackedObjects()){
-                    if (p.getId() == "ERROR"){
-                        sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId() , "lidar recieved Error, CRASHED at tick " + currentTick.getTick()));
+                Vector<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsUntilTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
+                Vector<DetectObjectsEvent> handled = new Vector<>();
+                Vector<TrackedObject> newlyTracked = new Vector<>();
+                TrackedObject curr;
+                for (StampedCloudPoints s : newCloudPoints){
+                    // if the relevant event is availiable- add the tracked objects
+                    if (s.getId() == "ERROR"){
+                        liDarWorkerTracker.setStatus(STATUS.ERROR);
+                        sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
                         terminate();
-                        return; // TODO WE NEED TO RESOLVE FUTURE OF EVENT?
+                        return;
                     }
-                    
-                    // otherwise, the frequency is for sure good enough, thus we can try to process the event
-                    else{
-                        // search the corresponding event in service map
-                        if (objectsToProcess.containsKey(p.getId())){
-                            // the event exists
-                            DetectedObject e = objectsToProcess.get(p.getId());
-    
-                            trackedObjects.add(new TrackedObject(e.getId(), currentTick.getTick(),e.getDescripition(),p.getCloudPoint())); 
-    
+                    for (DetectObjectsEvent e :liDarWorkerTracker.getEventsRecieved()){
+                        for (DetectedObject d : e.getObjectDetails().getDetectedObjects()){
+                            if (d.getId() == s.getId()){
+                                // we can create the object
+                                handled.add(e);
+                                curr = new TrackedObject(d.getId(), tickBroadcast.getTick(), d.getDescripition(),s.getCloudPoints());
+                                newlyTracked.add(curr);
+                                e.complete(true);
+                                liDarWorkerTracker.addLastTrackedObject(curr);
+                            }
                         }
                     }
                 }
-                sendEvent(new TrackedObjectsEvent(trackedObjects, currentTick.getTick()));
+                liDarWorkerTracker.handleProcessedDetected(handled);
+                sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
+            }
+        });
+
+        subscribeEvent(DetectObjectsEvent.class, detectObjectsEvent -> {
+            liDarWorkerTracker.addNewDetectEvent(detectObjectsEvent);
+        });
     
-            }
-
-        });
-
-        subscribeEvent(DetectObjectsEvent.class, (detectObjectsEvent)->{
-            for (DetectedObject d : detectObjectsEvent.getObjectDetails().getDetectedObjects()){
-                objectsToProcess.put(d.getId(), d);
-            }
-            
-        });
     }
 }

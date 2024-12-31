@@ -1,6 +1,7 @@
 package bgu.spl.mics.application;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.Comparator;
 //import java.util.Arrays;
 import java.util.HashMap;
@@ -17,30 +18,38 @@ import com.google.gson.reflect.TypeToken;
 
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.application.objects.FusionSlam;
+import bgu.spl.mics.application.objects.GPSIMU;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
+import bgu.spl.mics.application.objects.StatisticalFolder;
+import bgu.spl.mics.application.objects.TrackedObject;
 import bgu.spl.mics.application.objects.STATUS;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Paths;
 
 // import bgu.spl.mics.application.objects.Camera;
 // import bgu.spl.mics.application.objects.FusionSlam;
 
+import bgu.spl.mics.application.objects.Pose;
+
 // import bgu.spl.mics.MessageBusImpl;
 // import bgu.spl.mics.MicroService;
 // import bgu.spl.mics.application.objects.STATUS;
-// import bgu.spl.mics.application.services.CameraService;
-// import bgu.spl.mics.application.services.FusionSlamService;
-// import bgu.spl.mics.application.services.LiDarService;
-// import bgu.spl.mics.application.services.PoseService;
-// import bgu.spl.mics.application.services.TimeService;
-// import bgu.spl.mics.example.ServiceCreator;
+ import bgu.spl.mics.application.services.CameraService;
+ import bgu.spl.mics.application.services.FusionSlamService;
+ import bgu.spl.mics.application.services.LiDarService;
+ import bgu.spl.mics.application.services.PoseService;
+ import bgu.spl.mics.application.services.TimeService;
+ //import bgu.spl.mics.example.ServiceCreator;
 
 
 // import com.google.gson.reflect.TypeToken;
 // import java.lang.reflect.Type;
 // import java.util.List;
+
 
 
 
@@ -60,56 +69,314 @@ public class GurionRockRunner {
      *
      * @param args Command-line arguments. The first argument is expected to be the path to the configuration file.
      */
+
+    private static final Gson gson = new Gson();
+    private static StatisticalFolder statistics;
+    private static FusionSlam fusionSlam;
+    
     public static void main(String[] args) {
         System.out.println("Hello World!");
         // TODO: Parse configuration file.
         // TODO: Initialize system components and services. also TODO add thread to each created microService
         // TODO: Start the simulation.
-        Vector<Camera> cameras = new Vector<>();
-        Vector<LiDarWorkerTracker> LiDarWorkers = new Vector<>();
-        config_parser(args);
-        camera_data_parser(args);
+
+        if (args.length < 1) {
+            System.out.println("Configuration file path must be provided as the first command-line argument.");
+            System.exit(1);
+        }
+
+        String configFilePath = args[0];
+        boolean simulationSuccessful = true;
+        long startTime = 0; // Initialize to 0 to ensure it is explicitly set later
+
+        try {
+            statistics = new StatisticalFolder();
+            fusionSlam = FusionSlam.getInstance();
+            startTime = System.currentTimeMillis();
+
+            SystemConfig config = initializeSystem(configFilePath);
+            startServices(config);
+
+            // Simulation logic here...
+
+            // Write successful output
+            writeSuccessOutput("Simulation completed successfully", capturePoses(), statistics);
+
+        } catch (Exception e) {
+            simulationSuccessful = false;
+            statistics.incrementErrors();
+
+            // Capture last known frames and poses
+            Map<String, Object> lastFrames = new HashMap<>();
+            lastFrames.put("cameras", captureLastCamerasFrame());
+            lastFrames.put("lidar", captureLastLiDarFrame());
+
+            writeErrorOutput(e.getMessage(), null, lastFrames, capturePoses(), statistics);
+        }
+    
+
+
+
+        // Vector<Camera> cameras = new Vector<>();
+        // Vector<LiDarWorkerTracker> LiDarWorkers = new Vector<>();
+        // config_parser(args);
+        // camera_data_parser(args);
         // lotem - send the amount of each sensor to slam in order to follow terminations
        // init the thread of timeservice last (according to lotem)
     }
 
-    public static void config_parser(String[] args){
-        // this file will parse both cameras and lidarWorkers TODO
-        Gson gson = new Gson();
-        try  {
-            System.out.println("Current working directory: " + System.getProperty("user.dir")); // debug purposes
-            Type ParsingType = new TypeToken<List<Camera>>(){}.getType();
-            FileReader reader = new FileReader(".\\example_input\\configuration_file.json");
-            JsonObject camerasJson = gson.fromJson(reader, JsonObject.class);
-            // the config file should create the instances of the cameras and lidarWorkers
+
+
+
+    private static void writeErrorOutput(String errorMessage, String faultySensor, Map<String, Object> lastFrames, Vector<Pose> poses, StatisticalFolder statistics) {
+        String fileName = "error.json";
+        JsonObject errorOutput = new JsonObject();
+
+        // Add error details
+        errorOutput.addProperty("error", errorMessage);
+        errorOutput.addProperty("faultySensor", faultySensor != null ? faultySensor : "Unknown");
+
+        // Add last frames
+        JsonObject lastCamerasFrame = new JsonObject();
+        JsonObject lastLiDarWorkerTrackersFrame = new JsonObject();
+        if (lastFrames.containsKey("cameras")) {
+            Map<String, StampedDetectedObjects> cameras = (Map<String, StampedDetectedObjects>) lastFrames.get("cameras");
+            cameras.forEach((key, value) -> lastCamerasFrame.add(key, gson.toJsonTree(value)));
         }
-        catch (IOException e) {
-            e.printStackTrace();}
-    }
+        if (lastFrames.containsKey("lidar")) {
+            Map<String, TrackedObject> lidarWorkers = (Map<String, TrackedObject>) lastFrames.get("lidar");
+            lidarWorkers.forEach((key, value) -> lastLiDarWorkerTrackersFrame.add(key, gson.toJsonTree(value)));
+        }
+        errorOutput.add("lastCamerasFrame", lastCamerasFrame);
+        errorOutput.add("lastLiDarWorkerTrackersFrame", lastLiDarWorkerTrackersFrame);
 
-    public static void camera_data_parser(String[] args) {
-        // the config file should use the cameras, lidarWorkers and update the StampedDetectedObjects field on each
-        Gson gson = new Gson();
-        try  {
-            System.out.println("Current working directory: " + System.getProperty("user.dir"));
+        // Add poses
+        errorOutput.add("poses", gson.toJsonTree(poses));
 
-            FileReader reader = new FileReader(".\\example_input\\camera_data.json");
-            Type camerasDetected = new TypeToken<Map<String, List<StampedDetectedObjects>>>(){}.getType();
-            Map<String, Vector<StampedDetectedObjects>> camerasDetectedMap = gson.fromJson(reader, camerasDetected);
-            for (Map.Entry<String, Vector<StampedDetectedObjects>> entry : camerasDetectedMap.entrySet()) {
-                Camera camera = getCamera(Integer.parseInt(entry.getKey()));
-                camera.setDetectedObjectsList(entry.getValue());
-            }
+        // Add statistics
+        JsonObject statisticsJson = new JsonObject();
+        statisticsJson.addProperty("systemRuntime", statistics.getSystemRuntime());
+        statisticsJson.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+        statisticsJson.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+        statisticsJson.addProperty("numLandmarks", FusionSlam.getInstance().getNumLandmarks());
+        statisticsJson.add("landMarks", gson.toJsonTree(FusionSlam.getInstance().getLandmarks()));
+        errorOutput.add("statistics", statisticsJson);
 
+        // Write the error JSON to file
+        try (FileWriter writer = new FileWriter(fileName)) {
+            writer.write(errorOutput.toString());
+            System.out.println("Error output written to " + fileName);
         } catch (IOException e) {
-        e.printStackTrace();
+            System.err.println("Failed to write error output file: " + e.getMessage());
+        }
+    }
+
+
+    private static void writeSuccessOutput(String message, Vector<Pose> poses, StatisticalFolder statistics) {
+        String fileName = "success.json";
+        JsonObject successOutput = new JsonObject();
+
+        // Add success message
+        successOutput.addProperty("message", message);
+
+        // Add poses
+        successOutput.add("poses", gson.toJsonTree(poses));
+
+        // Add statistics
+        JsonObject statisticsJson = new JsonObject();
+        statisticsJson.addProperty("systemRuntime", statistics.getSystemRuntime());
+        statisticsJson.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+        statisticsJson.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+        statisticsJson.addProperty("numLandmarks", FusionSlam.getInstance().getNumLandmarks());
+        statisticsJson.add("landMarks", gson.toJsonTree(FusionSlam.getInstance().getLandmarks()));
+        successOutput.add("statistics", statisticsJson);
+
+        // Write the success JSON to file
+        try (FileWriter writer = new FileWriter(fileName)) {
+            writer.write(successOutput.toString());
+            System.out.println("Success output written to " + fileName);
+        } catch (IOException e) {
+            System.err.println("Failed to write success output file: " + e.getMessage());
+        }
+    }
+
+
+    /**
+     * Initializes the system by loading configurations from the specified file path.
+     * @param configFilePath The path to the JSON configuration file.
+     * @return A fully configured SystemConfig instance containing all system components.
+     * @throws Exception Throws if there is an issue reading or parsing the configuration file.
+     */
+    private static SystemConfig initializeSystem(String configFilePath) throws Exception {
+            JsonObject config = parseJsonConfig(configFilePath);
+            
+            Map<Integer, Camera> cameras = loadCameras(config.getAsJsonObject("Cameras"));
+            Map<Integer, LiDarWorkerTracker> lidars = loadLiDars(config.getAsJsonObject("LiDarWorkers"));
+            GPSIMU gpsimu = new GPSIMU(loadPoses(config.get("poseJsonFile").getAsString()));
+
+            long tickTime = config.get("TickTime").getAsLong();
+            long duration = config.get("Duration").getAsLong();
+
+            return new SystemConfig(cameras, lidars, gpsimu, tickTime, duration);
         }
 
+
+    /**
+     * Parses the JSON configuration file.
+     * @param filePath The file path to the JSON configuration file.
+     * @return A JsonObject parsed from the configuration file.
+     * @throws Exception If the file cannot be read or parsed.
+     */
+    private static JsonObject parseJsonConfig(String filePath) throws Exception {
+        FileReader reader = new FileReader(Paths.get(filePath).toAbsolutePath().toString());
+        return gson.fromJson(reader, JsonObject.class);
     }
 
-    public static Camera getCamera(int Id){ // TODO- FROM ARRAY OF CAMERAS
-        return new Camera(Id, 0, STATUS.UP);
+
+    /**
+     * Loads camera configurations from the provided JSON object.
+     * @param cameraJson The JsonObject containing the camera configurations.
+     * @return A map of camera ID to Camera object.
+     * @throws Exception If there is an error during parsing.
+     */
+    private static Map<Integer, Camera> loadCameras(JsonObject cameraJson) throws Exception {
+        String path = Paths.get(cameraJson.get("camera_datas_path").getAsString()).toAbsolutePath().toString();
+        FileReader reader = new FileReader(path);
+        JsonArray cameraConfigs = cameraJson.getAsJsonArray("CamerasConfigurations");
+        Map<Integer, Camera> cameras = new HashMap<>();
+        for (int i = 0; i < cameraConfigs.size(); i++) {
+            JsonObject camConfig = cameraConfigs.get(i).getAsJsonObject();
+            Camera camera = gson.fromJson(camConfig, Camera.class);
+            cameras.put(camera.getId(), camera);
+        }
+        return cameras;
     }
+
+
+    /**
+     * Loads LiDar worker tracker configurations from the provided JSON object.
+     * @param lidarJson The JsonObject containing the LiDar configurations.
+     * @return A map of LiDar worker tracker ID to LiDarWorkerTracker object.
+     * @throws Exception If there is an error during parsing.
+     */
+    private static Map<Integer, LiDarWorkerTracker> loadLiDars(JsonObject lidarJson) throws Exception {
+        String path = Paths.get(lidarJson.get("lidars_data_path").getAsString()).toAbsolutePath().toString();
+        FileReader reader = new FileReader(path);
+        JsonArray lidarConfigs = lidarJson.getAsJsonArray("LidarConfigurations");
+        Map<Integer, LiDarWorkerTracker> lidars = new HashMap<>();
+        for (int i = 0; i < lidarConfigs.size(); i++) {
+            JsonObject lidConfig = lidarConfigs.get(i).getAsJsonObject();
+            LiDarWorkerTracker lidar = gson.fromJson(lidConfig, LiDarWorkerTracker.class);
+            lidars.put(lidar.getId(), lidar);
+        }
+        return lidars;
+    }
+
+    /**
+     * Loads poses from the specified file path into a Vector of Pose objects.
+     * @param poseFilePath The path to the file containing pose data.
+     * @return A Vector of Pose objects.
+     * @throws Exception If there is an error during file reading or parsing.
+     */
+    private static Vector<Pose> loadPoses(String poseFilePath) throws Exception {
+        FileReader reader = new FileReader(Paths.get(poseFilePath).toAbsolutePath().toString());
+        Type type = new TypeToken<Vector<Pose>>(){}.getType();
+        return gson.fromJson(reader, type);
+    }
+
+
+    /**
+     * Starts all the services necessary for the simulation, each in its own thread.
+     * @param config The SystemConfig containing all initialized components.
+     */
+    private static void startServices(SystemConfig config) {
+        config.cameras.forEach((id, camera) -> {
+            CameraService service = new CameraService(camera);
+            new Thread(service).start();
+        });
+
+        config.lidars.forEach((id, lidar) -> {
+            LiDarService service = new LiDarService(lidar);
+            new Thread(service).start();
+        });
+
+        PoseService poseService = new PoseService(config.gpsimu);
+        new Thread(poseService).start();
+
+        TimeService timeService = new TimeService(config.tickTime, config.duration);
+         new Thread(timeService).start();
+         
+        FusionSlam fusionSlam = FusionSlam.getInstance();
+        FusionSlamService fusionSlamService = new FusionSlamService(fusionSlam);
+        new Thread(fusionSlamService).start();
+    }
+
+     /**
+     * A configuration class that holds all system components needed for the simulation.
+     */
+    static class SystemConfig {
+        Map<Integer, Camera> cameras;
+        Map<Integer, LiDarWorkerTracker> lidars;
+        GPSIMU gpsimu;
+;
+        long tickTime;
+        long duration;
+
+        SystemConfig(Map<Integer, Camera> cameras, Map<Integer, LiDarWorkerTracker> lidars, GPSIMU gpsimu, long tickTime, long duration) {
+            this.cameras = cameras;
+            this.lidars = lidars;
+            this.gpsimu = gpsimu;
+            this.tickTime = tickTime;
+            this.duration = duration;
+        }
+    }
+    
+
+
+
+
+
+
+
+
+
+    // public static void config_parser(String[] args){
+    //     // this file will parse both cameras and lidarWorkers TODO
+    //     Gson gson = new Gson();
+    //     try  {
+    //         System.out.println("Current working directory: " + System.getProperty("user.dir")); // debug purposes
+    //         Type ParsingType = new TypeToken<List<Camera>>(){}.getType();
+    //         FileReader reader = new FileReader(".\\example_input\\configuration_file.json");
+    //         JsonObject camerasJson = gson.fromJson(reader, JsonObject.class);
+    //         // the config file should create the instances of the cameras and lidarWorkers
+    //     }
+    //     catch (IOException e) {
+    //         e.printStackTrace();}
+    // }
+
+    // public static void camera_data_parser(String[] args) {
+    //     // the config file should use the cameras, lidarWorkers and update the StampedDetectedObjects field on each
+    //     Gson gson = new Gson();
+    //     try  {
+    //         System.out.println("Current working directory: " + System.getProperty("user.dir"));
+
+    //         FileReader reader = new FileReader(".\\example_input\\camera_data.json");
+    //         Type camerasDetected = new TypeToken<Map<String, List<StampedDetectedObjects>>>(){}.getType();
+    //         Map<String, Vector<StampedDetectedObjects>> camerasDetectedMap = gson.fromJson(reader, camerasDetected);
+    //         for (Map.Entry<String, Vector<StampedDetectedObjects>> entry : camerasDetectedMap.entrySet()) {
+    //             Camera camera = getCamera(Integer.parseInt(entry.getKey()));
+    //             camera.setDetectedObjectsList(entry.getValue());
+    //         }
+
+    //     } catch (IOException e) {
+    //     e.printStackTrace();
+    //     }
+
+    // }
+
+    // public static Camera getCamera(int Id){ // TODO- FROM ARRAY OF CAMERAS
+    //     return new Camera(Id, 0, STATUS.UP);
+    // }
 }
 
 

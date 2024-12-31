@@ -33,4 +33,6 @@ public class LandMark {
         this.coordinates.clear();
         this.coordinates.addAll(coordinates);
     }
+
+    
 }

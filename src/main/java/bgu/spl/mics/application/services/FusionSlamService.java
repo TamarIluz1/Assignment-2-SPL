@@ -1,6 +1,14 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.application.messages.PoseEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.messages.TrackedObjectsEvent;
+import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.FusionSlam;
+import bgu.spl.mics.application.objects.Pose;
+
+import java.util.Vector;
+
 import bgu.spl.mics.MicroService;
 
 /**
@@ -11,14 +19,19 @@ import bgu.spl.mics.MicroService;
  * transforming and updating the map with new landmarks.
  */
 public class FusionSlamService extends MicroService {
+
     /**
      * Constructor for FusionSlamService.
      *
      * @param fusionSlam The FusionSLAM object responsible for managing the global map.
      */
+
+    private final FusionSlam fusionSlam;
+
     public FusionSlamService(FusionSlam fusionSlam) {
         super("FusionSlamService");
         // TODO Implement this
+        this.fusionSlam = fusionSlam;
     }
 
     /**
@@ -29,5 +42,35 @@ public class FusionSlamService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
-    }
+
+             // Subscribe to TrackedObjectsEvent
+        subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {
+            // Process tracked objects and update landmarks
+            trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
+                String id = trackedObject.getId();
+                String description = trackedObject.getDescription();
+                Vector<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
+                fusionSlam.addOrUpdateLandmark(id, description, trackedCoordinates);
+            });
+            complete(trackedObjectsEvent, true); // Acknowledge processing is done
+
+        });
+
+        // Subscribe to PoseEvent
+        subscribeEvent(PoseEvent.class, poseEvent -> {
+                Pose pose = poseEvent.getPose();
+                fusionSlam.addPose(pose); // Update the robot's pose in FusionSlam
+                complete(poseEvent, pose); // Acknowledge processing is done
+        });
+
+        // Subscribe to TickBroadcast
+        subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
+                int currentTick = tickBroadcast.getTick();
+                System.out.println("FusionSlamService received TickBroadcast: " + currentTick);
+            });
+
+            System.out.println("FusionSlamService initialized successfully.");
+        
+        }
 }
+

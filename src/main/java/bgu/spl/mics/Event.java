@@ -12,7 +12,7 @@ public interface Event<T> extends Message {
 
     Future<T> getFuture();
 
-    void complete();
+    void complete(T result);
 
 
 }

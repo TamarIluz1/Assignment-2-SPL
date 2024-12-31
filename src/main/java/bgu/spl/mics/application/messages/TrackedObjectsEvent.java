@@ -5,7 +5,6 @@ import bgu.spl.mics.application.objects.TrackedObject;
 import java.util.Vector;
 import bgu.spl.mics.Future;
 
-import java.util.concurrent.CompletableFuture;
 
 public class TrackedObjectsEvent implements Event<Boolean>{
     // we need to implement in the future
@@ -35,9 +34,9 @@ public class TrackedObjectsEvent implements Event<Boolean>{
     }
 
 	@Override
-	public void complete() {
+	public void complete(Boolean result) {
 		// TODO Auto-generated method stub
-        future.resolve(true);
+        future.resolve(result);
 	}
 
 

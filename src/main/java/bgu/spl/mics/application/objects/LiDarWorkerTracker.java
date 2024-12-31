@@ -1,5 +1,8 @@
 package bgu.spl.mics.application.objects;
+import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.objects.LiDarDataBase;
+
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -12,12 +15,19 @@ public class LiDarWorkerTracker {
     private int frequency;
     private STATUS status;
     private Vector<TrackedObject> lastTrackedObjects;
+    private LiDarDataBase db;// can we delete this? Tamar 31/12
+    // we need this to relate to the db. but we can implement differently , noam
+    private Vector<DetectObjectsEvent> eventsRecieved;
+
 
     public LiDarWorkerTracker(int id, int frequency){
         this.id = id;
         this.frequency = frequency;
         this.status = STATUS.UP;
         this.lastTrackedObjects = new Vector<>();
+        db = LiDarDataBase.getInstance("path_to_lidar_data_file.json");
+        eventsRecieved = new Vector<>();
+        
     }
 
     public int getId() {
@@ -36,19 +46,31 @@ public class LiDarWorkerTracker {
         this.status = status;
     }
 
+    public void addLastTrackedObject(TrackedObject e){
+        lastTrackedObjects.add(e);
+    }
     public Vector<TrackedObject> getLastTrackedObjects(){
         return lastTrackedObjects;
     }
 
-    public Vector<CloudPoint> getCoorCloudPoints(String objectID){
-        // TODO implement
-        // psuedo code: for each TrackedObject in lastTrackedObjects: to get the coordinates of the object from the dataBase
-        return  null;
 
+    public void addNewDetectEvent(DetectObjectsEvent e){
+        eventsRecieved.add(e);
     }
 
-    public void fetchByTime(int tickTime){
-        // add to the database the objects detected at time ticktime
+    public Vector<DetectObjectsEvent> getEventsRecieved(){
+        return eventsRecieved;
+    }
+
+
+    public Vector<StampedCloudPoints> getNewCloudPointsUntilTime(int detectionTime){
+        db.fetchUntilTime(detectionTime);
+    }
+
+    public void handleProcessedDetected(Vector<DetectObjectsEvent> events){
+        for (DetectObjectsEvent e : events){
+            eventsRecieved.remove(e);
+        }
     }
 
 

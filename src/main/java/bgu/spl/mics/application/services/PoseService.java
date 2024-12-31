@@ -33,16 +33,11 @@ public class PoseService extends MicroService {
         // TODO Implement this
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
-            // Handle the TickBroadcast message
-            System.out.println("Received TickBroadcast: " + tickBroadcast.getTick());
-            // Send a PoseEvent in response to the TickBroadcast
-            
-
-            //we need to find a way to make it work !!!
-            //not working now
-            //needs to understand how to use GPSIMU
-            PoseEvent event =  new PoseEvent(gpsimu.getPose());
+            System.out.println("Received TickBroadcast at tick: " + tickBroadcast.getTick());
+            gpsimu.setCurrentTick(tickBroadcast.getTick());
+            PoseEvent event = new PoseEvent(gpsimu.getCurrentPose());
             sendEvent(event);
+            System.out.println("PoseEvent sent for tick: " + tickBroadcast.getTick());
         });
         
     }
