@@ -115,6 +115,10 @@ public class MessageBusImpl implements MessageBus {
          m.wait(); // waiting for the future to be resolved- getting an event/broadcast
          
       }
+      //recomended instade of the while loop 31.12 Tamar
+      //synchronized (queue) {
+      //return queue.take();
+      //}
       return m1;
    }
    

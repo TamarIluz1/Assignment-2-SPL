@@ -88,26 +88,26 @@ public class GurionRockRunner {
         
 
         //String configFilePath = args[0];
-        String configFilePath = "example_input_2\\configuration_file.json";
-        boolean simulationSuccessful = true;
+        // String configFilePath = "example_input_2\\configuration_file.json";
+        // boolean simulationSuccessful = true;
 
-        try {
-            statistics = new StatisticalFolder();
-            fusionSlam = FusionSlam.getInstance();
-            SystemConfig config = initializeSystem(configFilePath);
-            startServices(config);
+        // try {
+        //     statistics = new StatisticalFolder();
+        //     fusionSlam = FusionSlam.getInstance();
+        //     SystemConfig config = initializeSystem(configFilePath);
+        //     startServices(config);
 
-            // Simulation logic here...
+        //     // Simulation logic here...
 
-            // Write successful output
-            writeSuccessOutput("Simulation completed successfully", capturePoses(), statistics);
+        //     // Write successful output
+        //     writeSuccessOutput("Simulation completed successfully", capturePoses(), statistics);
 
-        } catch (Exception e) {
-            simulationSuccessful = false;
-            statistics.incrementErrors();
+        // } catch (Exception e) {
+        //     simulationSuccessful = false;
+        //     statistics.incrementErrors();
 
-            writeErrorOutput(e.getMessage(), null, capturePoses(), statistics);
-        }
+        //     writeErrorOutput(e.getMessage(), null, capturePoses(), statistics);
+        // }
     
 
 
@@ -129,69 +129,69 @@ public class GurionRockRunner {
     }
 
 
-    private static void writeErrorOutput(String errorMessage, String faultySensor, Vector<Pose> poses, StatisticalFolder statistics) {
-        String fileName = "error.json";
-        JsonObject errorOutput = new JsonObject();
+    // private static void writeErrorOutput(String errorMessage, String faultySensor, Vector<Pose> poses, StatisticalFolder statistics) {
+    //     String fileName = "error.json";
+    //     JsonObject errorOutput = new JsonObject();
 
-        // Add error details
-        errorOutput.addProperty("error", errorMessage);
-        errorOutput.addProperty("faultySensor", faultySensor != null ? faultySensor : "Unknown");
+    //     // Add error details
+    //     errorOutput.addProperty("error", errorMessage);
+    //     errorOutput.addProperty("faultySensor", faultySensor != null ? faultySensor : "Unknown");
 
-        // Add last frames
-        JsonObject lastCamerasFrame = new JsonObject();
-        JsonObject lastLiDarWorkerTrackersFrame = new JsonObject();
-        errorOutput.add("lastCamerasFrame", lastCamerasFrame);
-        errorOutput.add("lastLiDarWorkerTrackersFrame", lastLiDarWorkerTrackersFrame);
+    //     // Add last frames
+    //     JsonObject lastCamerasFrame = new JsonObject();
+    //     JsonObject lastLiDarWorkerTrackersFrame = new JsonObject();
+    //     errorOutput.add("lastCamerasFrame", lastCamerasFrame);
+    //     errorOutput.add("lastLiDarWorkerTrackersFrame", lastLiDarWorkerTrackersFrame);
 
-        // Add poses
-        errorOutput.add("poses", gson.toJsonTree(poses));
+    //     // Add poses
+    //     errorOutput.add("poses", gson.toJsonTree(poses));
 
-        // Add statistics
-        JsonObject statisticsJson = new JsonObject();
-        statisticsJson.addProperty("systemRuntime", statistics.getSystemRuntime());
-        statisticsJson.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
-        statisticsJson.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
-        statisticsJson.addProperty("numLandmarks", FusionSlam.getInstance().getNumLandmarks());
-        statisticsJson.add("landMarks", gson.toJsonTree(FusionSlam.getInstance().getLandmarks()));
-        errorOutput.add("statistics", statisticsJson);
+    //     // Add statistics
+    //     JsonObject statisticsJson = new JsonObject();
+    //     statisticsJson.addProperty("systemRuntime", statistics.getSystemRuntime());
+    //     statisticsJson.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+    //     statisticsJson.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+    //     statisticsJson.addProperty("numLandmarks", FusionSlam.getInstance().getNumLandmarks());
+    //     statisticsJson.add("landMarks", gson.toJsonTree(FusionSlam.getInstance().getLandmarks()));
+    //     errorOutput.add("statistics", statisticsJson);
 
-        // Write the error JSON to file
-        try (FileWriter writer = new FileWriter(fileName)) {
-            writer.write(errorOutput.toString());
-            System.out.println("Error output written to " + fileName);
-        } catch (IOException e) {
-            System.err.println("Failed to write error output file: " + e.getMessage());
-        }
-    }
+    //     // Write the error JSON to file
+    //     try (FileWriter writer = new FileWriter(fileName)) {
+    //         writer.write(errorOutput.toString());
+    //         System.out.println("Error output written to " + fileName);
+    //     } catch (IOException e) {
+    //         System.err.println("Failed to write error output file: " + e.getMessage());
+    //     }
+    // }
 
 
-    private static void writeSuccessOutput(String message, Vector<Pose> poses, StatisticalFolder statistics) {
-        String fileName = "success.json";
-        JsonObject successOutput = new JsonObject();
+    // private static void writeSuccessOutput(String message, Vector<Pose> poses, StatisticalFolder statistics) {
+    //     String fileName = "success.json";
+    //     JsonObject successOutput = new JsonObject();
 
-        // Add success message
-        successOutput.addProperty("message", message);
+    //     // Add success message
+    //     successOutput.addProperty("message", message);
 
-        // Add poses
-        successOutput.add("poses", gson.toJsonTree(poses));
+    //     // Add poses
+    //     successOutput.add("poses", gson.toJsonTree(poses));
 
-        // Add statistics
-        JsonObject statisticsJson = new JsonObject();
-        statisticsJson.addProperty("systemRuntime", statistics.getSystemRuntime());
-        statisticsJson.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
-        statisticsJson.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
-        statisticsJson.addProperty("numLandmarks", FusionSlam.getInstance().getNumLandmarks());
-        statisticsJson.add("landMarks", gson.toJsonTree(FusionSlam.getInstance().getLandmarks()));
-        successOutput.add("statistics", statisticsJson);
+    //     // Add statistics
+    //     JsonObject statisticsJson = new JsonObject();
+    //     statisticsJson.addProperty("systemRuntime", statistics.getSystemRuntime());
+    //     statisticsJson.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+    //     statisticsJson.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+    //     statisticsJson.addProperty("numLandmarks", FusionSlam.getInstance().getNumLandmarks());
+    //     statisticsJson.add("landMarks", gson.toJsonTree(FusionSlam.getInstance().getLandmarks()));
+    //     successOutput.add("statistics", statisticsJson);
 
-        // Write the success JSON to file
-        try (FileWriter writer = new FileWriter(fileName)) {
-            writer.write(successOutput.toString());
-            System.out.println("Success output written to " + fileName);
-        } catch (IOException e) {
-            System.err.println("Failed to write success output file: " + e.getMessage());
-        }
-    }
+    //     // Write the success JSON to file
+    //     try (FileWriter writer = new FileWriter(fileName)) {
+    //         writer.write(successOutput.toString());
+    //         System.out.println("Success output written to " + fileName);
+    //     } catch (IOException e) {
+    //         System.err.println("Failed to write success output file: " + e.getMessage());
+    //     }
+    // }
 
 
     /**

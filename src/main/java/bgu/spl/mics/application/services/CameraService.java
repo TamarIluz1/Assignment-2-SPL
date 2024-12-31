@@ -53,12 +53,16 @@ public class CameraService extends MicroService {
         messageBus.register(this);
     
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
-            System.out.println(camera.getId() + " camera received TerminateBroadcast");
+            // TODO Implement this
+            //SUBSCRIBE TO TERMINATE BROADCAST 30.12 TAMAR
+            camera.setStatus(STATUS.DOWN);
             terminate();
         });
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
+            // TODO Implement this
+            //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
             System.out.println(camera.getId() + " camera received CrashedBroadcast.");
             terminate();
         });
