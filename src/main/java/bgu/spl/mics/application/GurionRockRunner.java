@@ -80,12 +80,15 @@ public class GurionRockRunner {
         // TODO: Initialize system components and services. also TODO add thread to each created microService
         // TODO: Start the simulation.
 
-        if (args.length < 1) {
-            System.out.println("Configuration file path must be provided as the first command-line argument.");
-            System.exit(1);
-        }
+        // if (args.length < 1) {
+        //     System.out.println("Configuration file path must be provided as the first command-line argument.");
+        //     System.exit(1);
+        // }
+    
+        
 
-        String configFilePath = args[0];
+        //String configFilePath = args[0];
+        String configFilePath = "example_input_2\\configuration_file.json";
         boolean simulationSuccessful = true;
 
         try {
@@ -117,7 +120,13 @@ public class GurionRockRunner {
        // init the thread of timeservice last (according to lotem)
     }
 
-
+    /**
+    * Captures the current poses from the GPSIMU.
+    * @return A Vector of Pose objects.
+    */
+    private static Vector<Pose> capturePoses() {
+        return fusionSlam.getPoses();
+    }
 
 
     private static void writeErrorOutput(String errorMessage, String faultySensor, Vector<Pose> poses, StatisticalFolder statistics) {

@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.TickBroadcast;
+import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 
 
@@ -37,8 +38,10 @@ public class TimeService extends MicroService {
     protected void initialize() {
         // TODO Implement this
 
-        subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
-            System.out.println("TimeService " + getName() + " received TerminateBroadcast");
+        messageBus.register(this);
+        subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
+            // TODO Implement this
+            //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
             terminate();
         });
 

@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 import bgu.spl.mics.application.objects.CloudPoint;
@@ -42,6 +44,22 @@ public class FusionSlamService extends MicroService {
     @Override
     protected void initialize() {
         // TODO Implement this
+
+        messageBus.register(this);
+    
+        subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
+            // TODO Implement this
+            //SUBSCRIBE TO TERMINATE BROADCAST 30.12 TAMAR
+            terminate();
+        });
+    
+        // Subscribe to CrashedBroadcast: Handle system-wide crash
+        subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
+            // TODO Implement this
+            //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
+            terminate();
+        });
+
 
              // Subscribe to TrackedObjectsEvent
         subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {

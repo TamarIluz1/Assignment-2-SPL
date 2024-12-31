@@ -64,7 +64,8 @@ public class LiDarWorkerTracker {
 
 
     public Vector<StampedCloudPoints> getNewCloudPointsUntilTime(int detectionTime){
-        db.fetchUntilTime(detectionTime);
+        return db.fetchUntilTime(detectionTime);// i fixed this line 31/12 Tamar 
+        // it was missing a return statement
     }
 
     public void handleProcessedDetected(Vector<DetectObjectsEvent> events){
