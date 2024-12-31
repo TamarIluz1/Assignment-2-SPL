@@ -87,13 +87,10 @@ public class GurionRockRunner {
 
         String configFilePath = args[0];
         boolean simulationSuccessful = true;
-        long startTime = 0; // Initialize to 0 to ensure it is explicitly set later
 
         try {
             statistics = new StatisticalFolder();
             fusionSlam = FusionSlam.getInstance();
-            startTime = System.currentTimeMillis();
-
             SystemConfig config = initializeSystem(configFilePath);
             startServices(config);
 
@@ -106,12 +103,7 @@ public class GurionRockRunner {
             simulationSuccessful = false;
             statistics.incrementErrors();
 
-            // Capture last known frames and poses
-            Map<String, Object> lastFrames = new HashMap<>();
-            lastFrames.put("cameras", captureLastCamerasFrame());
-            lastFrames.put("lidar", captureLastLiDarFrame());
-
-            writeErrorOutput(e.getMessage(), null, lastFrames, capturePoses(), statistics);
+            writeErrorOutput(e.getMessage(), null, capturePoses(), statistics);
         }
     
 
@@ -128,7 +120,7 @@ public class GurionRockRunner {
 
 
 
-    private static void writeErrorOutput(String errorMessage, String faultySensor, Map<String, Object> lastFrames, Vector<Pose> poses, StatisticalFolder statistics) {
+    private static void writeErrorOutput(String errorMessage, String faultySensor, Vector<Pose> poses, StatisticalFolder statistics) {
         String fileName = "error.json";
         JsonObject errorOutput = new JsonObject();
 
@@ -139,14 +131,6 @@ public class GurionRockRunner {
         // Add last frames
         JsonObject lastCamerasFrame = new JsonObject();
         JsonObject lastLiDarWorkerTrackersFrame = new JsonObject();
-        if (lastFrames.containsKey("cameras")) {
-            Map<String, StampedDetectedObjects> cameras = (Map<String, StampedDetectedObjects>) lastFrames.get("cameras");
-            cameras.forEach((key, value) -> lastCamerasFrame.add(key, gson.toJsonTree(value)));
-        }
-        if (lastFrames.containsKey("lidar")) {
-            Map<String, TrackedObject> lidarWorkers = (Map<String, TrackedObject>) lastFrames.get("lidar");
-            lidarWorkers.forEach((key, value) -> lastLiDarWorkerTrackersFrame.add(key, gson.toJsonTree(value)));
-        }
         errorOutput.add("lastCamerasFrame", lastCamerasFrame);
         errorOutput.add("lastLiDarWorkerTrackersFrame", lastLiDarWorkerTrackersFrame);
 

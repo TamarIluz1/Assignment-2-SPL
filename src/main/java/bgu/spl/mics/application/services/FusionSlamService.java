@@ -65,7 +65,7 @@ public class FusionSlamService extends MicroService {
 
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
-                int currentTick = tickBroadcast.getTick();
+                long currentTick = tickBroadcast.getTick();
                 System.out.println("FusionSlamService received TickBroadcast: " + currentTick);
             });
 

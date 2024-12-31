@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class StatisticalFolder {
     // TODO: Define fields and methods for statistics tracking.
     
-    private long systemRuntime;// changed to long from int
+    private int systemRuntime;// changed to long from int
     private final AtomicInteger numDetectedObjects;
     private final AtomicInteger numTrackedObjects;
     private final AtomicInteger numErrors;
@@ -21,7 +21,7 @@ public class StatisticalFolder {
         this.numErrors = new AtomicInteger(0);
     }
 
-    public void setSystemRuntime(long runtime) {
+    public void setSystemRuntime(int runtime) {
         this.systemRuntime = runtime;
     }
 
@@ -37,7 +37,7 @@ public class StatisticalFolder {
         numErrors.incrementAndGet();
     }
 
-    public long getSystemRuntime() {
+    public int getSystemRuntime() {
         return systemRuntime;
     }
 

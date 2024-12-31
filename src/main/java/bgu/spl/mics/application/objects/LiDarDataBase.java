@@ -24,6 +24,7 @@ public class LiDarDataBase {
     }
 
     private Vector<StampedCloudPoints> cloudPointsDB;// i added this line
+    private int TrackedCounter;
 
     /**
      * Returns the singleton instance of LiDarDataBase.
@@ -38,6 +39,7 @@ public class LiDarDataBase {
     // add private meadod to singleton class TODO explain to noam :)
     private LiDarDataBase() {
         cloudPointsDB = new Vector<>();
+        TrackedCounter = 0;
     }
 
 
@@ -77,6 +79,14 @@ public class LiDarDataBase {
             }
         }
         return null;
+    }
+
+    public void reportTracked(){
+        TrackedCounter++;
+    }
+
+    public boolean isFinishedTracking(){
+        return (TrackedCounter == cloudPointsDB.size());
     }
 
 

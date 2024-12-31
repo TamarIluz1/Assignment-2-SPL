@@ -44,7 +44,7 @@ public class TimeService extends MicroService {
 
         // Start a new thread to handle tick broadcasting
         Thread tickThread = new Thread(() -> {
-        int currentTick = 1;
+        int currentTick = 0;
         while (currentTick <= Duration) {
             try {
                 Thread.sleep(TickTime);

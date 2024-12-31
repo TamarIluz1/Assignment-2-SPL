@@ -71,6 +71,7 @@ public class LiDarService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             if (liDarWorkerTracker.getStatus() == STATUS.UP){
+                // TODO need to figure out how lidar 
                 Vector<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsUntilTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
                 Vector<DetectObjectsEvent> handled = new Vector<>();
                 Vector<TrackedObject> newlyTracked = new Vector<>();
