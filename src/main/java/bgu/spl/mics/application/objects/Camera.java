@@ -8,7 +8,7 @@ import java.util.*;
  * Responsible for detecting objects in the environment.
  */
 public class Camera {
-    final int id;
+    int id;
     int  frequency;
     STATUS status;
     ArrayList<StampedDetectedObjects> detectedObjectsList;
@@ -31,10 +31,6 @@ public class Camera {
         return id;
     }
 
-    public static Camera getCamera(int Id){ // TODO
-        return new Camera(Id, 0, STATUS.UP);
-    }
-
     public int getFrequency() {
         return frequency;
     }
@@ -54,6 +50,7 @@ public class Camera {
     // to be used in the parsing of the json file camera_data.json
     public void setDetectedObjectsList(ArrayList<StampedDetectedObjects> detectedObjectsList) { 
         this.detectedObjectsList = detectedObjectsList;
+        detectedObjectsIterator = detectedObjectsList.iterator();
     }
 
 

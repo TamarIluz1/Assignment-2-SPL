@@ -8,7 +8,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 //import java.util.Scanner;
 import com.google.gson.Gson;
@@ -81,7 +80,7 @@ public class GurionRockRunner {
     private static StatisticalFolder statistics;
     private static FusionSlam fusionSlam;
     
-    public static void main(String[] args) {
+     public static void main(String[] args) {
         System.out.println("Starting Simulation...");
 
         if (args.length < 1) {
@@ -165,7 +164,7 @@ public class GurionRockRunner {
 
         Map<Integer, LiDarWorkerTracker> lidars = new HashMap<>();
         for (LidarConfiguration lidConfig : config.getLiDarWorkers().getLidarConfigurations()) {
-            LiDarWorkerTracker lidar = new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency());
+            LiDarWorkerTracker lidar = new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency(),config.getLiDarWorkers().getLidarsDataPath());
             lidars.put(lidConfig.getId(), lidar);
         }
 
@@ -214,9 +213,6 @@ public class GurionRockRunner {
             this.duration = duration;
         }
     }
-
-    
 }
-
 
 

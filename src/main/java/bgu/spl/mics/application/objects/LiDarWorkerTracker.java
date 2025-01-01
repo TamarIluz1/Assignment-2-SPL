@@ -18,15 +18,17 @@ public class LiDarWorkerTracker {
     private ArrayList<DetectObjectsEvent> eventsRecieved;
 
 
-    public LiDarWorkerTracker(int id, int frequency){
+    public LiDarWorkerTracker(int id, int frequency,String pathToDataFile) {// added pathToDataFile Tamar 31/12
         this.id = id;
         this.frequency = frequency;
         this.status = STATUS.UP;
         this.lastTrackedObjects = new ArrayList<>();
-        db = LiDarDataBase.getInstance("path_to_lidar_data_file.json");
+        db = LiDarDataBase.getInstance(pathToDataFile);
         eventsRecieved = new ArrayList<>();
         
     }
+
+
 
     public int getId() {
         return id;

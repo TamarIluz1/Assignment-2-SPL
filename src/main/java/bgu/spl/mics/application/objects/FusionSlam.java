@@ -60,8 +60,8 @@ public class FusionSlam {
         landmarks.add(landmark);
     }
 
-    public List<CloudPoint> convertToGlobal(List<CloudPoint> localCoordinates, Pose pose) {
-        List<CloudPoint> globalCoordinates = new ArrayList<>();
+    public ArrayList<CloudPoint> convertToGlobal(List<CloudPoint> localCoordinates, Pose pose) {
+        ArrayList<CloudPoint> globalCoordinates = new ArrayList<>();
         for (CloudPoint localCP : localCoordinates) {
             globalCoordinates.add(transform(localCP, pose));
         }

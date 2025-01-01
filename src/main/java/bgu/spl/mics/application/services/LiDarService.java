@@ -69,7 +69,7 @@ public class LiDarService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             if (liDarWorkerTracker.getStatus() == STATUS.UP){
-                if (liDarWorkerTracker.isFinished()){
+                if (liDarWorkerTracker.isFinished()){//this is not correct !!!!. it can finish working and the time is not finished
                     liDarWorkerTracker.setStatus(STATUS.DOWN);
                     terminateService();
                 }
@@ -81,7 +81,7 @@ public class LiDarService extends MicroService {
                     // if the relevant event is availiable- add the tracked objects
                     if (s.getId() == "ERROR"){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
-                        sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
+                        sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
                         terminateService();
                         return;
                     }
@@ -106,6 +106,10 @@ public class LiDarService extends MicroService {
         subscribeEvent(DetectObjectsEvent.class, detectObjectsEvent -> {
             liDarWorkerTracker.addNewDetectEvent(detectObjectsEvent);
         });
+
+
     
     }
+
+
 }

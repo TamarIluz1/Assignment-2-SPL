@@ -75,15 +75,16 @@ public class CameraService extends MicroService {
                     camera.setStatus(STATUS.DOWN);
                     terminateService();
                 }
-                else if (nextDetected.getTimestamp() <= currentTick + camera.getFrequency()) {
+                else if (nextDetected.getTimestamp() + camera.getFrequency() <= currentTick ) {
                     // invariant: if one object is an error, the whole service is terminated and the data won't be sent
                     for (DetectedObject object : nextDetected.getDetectedObjects()) {
                         if ("ERROR" == object.getId()) {
                             // Handle camera error scenario
                             camera.setStatus(STATUS.ERROR);
-                            sendBroadcast(new CrashedBroadcast(camera.getId(), "Camera error detected at tick " + currentTick));
+                            sendBroadcast(new CrashedBroadcast("camera " +camera.getId(), "Camera error detected at tick " + currentTick));
                             terminateService();
                             return;
+                            
                             
                         }
                     }
