@@ -11,7 +11,7 @@ public class Camera {
     final int id;
     int  frequency;
     STATUS status;
-    Vector<StampedDetectedObjects> detectedObjectsList;
+    Vector<StampedDetectedObjects> detectedObjectsList;// the camara will be updated in GurionRockRunner to have all the data of all the ticks . Tamar 31.12
     Iterator<StampedDetectedObjects> detectedObjectsIterator;
 
     public static Camera fromJson(int id, int frequency) { //FACTORY!
@@ -29,10 +29,6 @@ public class Camera {
      // Getters and setters (if needed)
      public int getId() {
         return id;
-    }
-
-    public static Camera getCamera(int Id){ // TODO
-        return new Camera(Id, 0, STATUS.UP);
     }
 
     public int getFrequency() {
@@ -54,6 +50,7 @@ public class Camera {
     // to be used in the parsing of the json file camera_data.json
     public void setDetectedObjectsList(Vector<StampedDetectedObjects> detectedObjectsList) { 
         this.detectedObjectsList = detectedObjectsList;
+        detectedObjectsIterator = detectedObjectsList.iterator();
     }
 
 

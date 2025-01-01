@@ -5,6 +5,7 @@ import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
+import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.TrackedObject;
@@ -52,6 +53,7 @@ public class LiDarService extends MicroService {
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
             if (terminateBroadcast.getSender() == "time"){
                 System.out.println("recieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
+                liDarWorkerTracker.setStatus(STATUS.DOWN);
                 terminate();
             }
         });
@@ -64,7 +66,7 @@ public class LiDarService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             if (liDarWorkerTracker.getStatus() == STATUS.UP){
-                if (liDarWorkerTracker.isFinished()){
+                if (liDarWorkerTracker.isFinished()){//this is not correct !!!!. it can finish working and the time is not finished
                     liDarWorkerTracker.setStatus(STATUS.DOWN);
                     terminate();
                 }
@@ -76,7 +78,7 @@ public class LiDarService extends MicroService {
                     // if the relevant event is availiable- add the tracked objects
                     if (s.getId() == "ERROR"){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
-                        sendBroadcast(new CrashedBroadcast(liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
+                        sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
                         terminate();
                         return;
                     }
@@ -102,6 +104,10 @@ public class LiDarService extends MicroService {
         subscribeEvent(DetectObjectsEvent.class, detectObjectsEvent -> {
             liDarWorkerTracker.addNewDetectEvent(detectObjectsEvent);
         });
+
+
     
     }
+
+
 }

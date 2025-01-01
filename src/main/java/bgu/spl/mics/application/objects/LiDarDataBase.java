@@ -1,7 +1,14 @@
 package bgu.spl.mics.application.objects;
 
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 import java.util.Vector;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
 
 
 
@@ -12,7 +19,7 @@ import java.util.Vector;
 public class LiDarDataBase {
 
     private static class LiDarDataBaseHolder {
-        private static LiDarDataBase instance = new LiDarDataBase();
+        private static LiDarDataBase instance;
     }
 
     private Vector<StampedCloudPoints> cloudPointsDB;// i added this line
@@ -26,13 +33,30 @@ public class LiDarDataBase {
      * @return The singleton instance of LiDarDataBase.
      */
     public static LiDarDataBase getInstance(String filePath) {
+        if (LiDarDataBaseHolder.instance == null) {
+            LiDarDataBaseHolder.instance = new LiDarDataBase(filePath);
+        }
         return LiDarDataBaseHolder.instance;
     }
 
+
+    private void loadDataFromFile(String filePath) {
+        Gson gson = new Gson();
+        try (FileReader reader = new FileReader(filePath)) {
+            Type listType = new TypeToken<Vector<StampedCloudPoints>>() {}.getType();
+            cloudPointsDB = gson.fromJson(reader, listType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            
+            cloudPointsDB = new Vector<>();
+        }
+    }
+
     
-    private LiDarDataBase() {
+    private LiDarDataBase(String filePath) {
         cloudPointsDB = new Vector<>();
         TrackedCounter = 0;
+        loadDataFromFile(filePath);
     }
 
 

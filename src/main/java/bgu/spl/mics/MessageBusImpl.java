@@ -55,7 +55,7 @@ public class MessageBusImpl implements MessageBus {
       //what needs to be checked?
    }
 
-   public void sendBroadcast(Broadcast b) { // no need to synchronize because the broadcastSubscribers is a ConcurrentHashMap
+   public void sendBroadcast(Broadcast b) { // we need to synchronize because the broadcastSubscribers is a ConcurrentHashMap
       ConcurrentLinkedQueue<MicroService> subscribers = broadcastSubscribers.get(b.getClass());
       if(subscribers != null) {
          for(MicroService m : subscribers) {

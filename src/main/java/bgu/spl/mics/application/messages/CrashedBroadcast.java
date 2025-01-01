@@ -4,9 +4,9 @@ import bgu.spl.mics.Broadcast;
 
 public class CrashedBroadcast implements Broadcast{
     // we need to implement in the futare
-    int objectID;
+    String objectID; // camera, lidar
     String message;
-    public CrashedBroadcast(int objectID, String message) {
+    public CrashedBroadcast( String objectID, String message) {
         this.objectID = objectID;
         this.message = message;
     }

@@ -49,6 +49,9 @@ public class PoseService extends MicroService {
         });
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
+            if(gpsimu.getStatus() == STATUS.DOWN){
+                terminate();
+            }
             System.out.println("Received TickBroadcast at tick: " + tickBroadcast.getTick());
             gpsimu.setCurrentTick(tickBroadcast.getTick());
             PoseEvent event = new PoseEvent(gpsimu.getCurrentPose());

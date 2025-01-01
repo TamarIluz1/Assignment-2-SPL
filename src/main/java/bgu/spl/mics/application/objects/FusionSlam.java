@@ -12,6 +12,7 @@ public class FusionSlam {
     int terminatedCounter; 
     Object terminatedCounterLock;
     final int sensorAmount; // TODO init in main
+    
     private FusionSlam(int sensorAmount) {
         this.landmarks = new Vector<>();
         this.poses = new Vector<>();

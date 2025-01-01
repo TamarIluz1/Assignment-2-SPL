@@ -63,7 +63,7 @@ public class FusionSlamService extends MicroService {
         });
 
 
-             // Subscribe to TrackedObjectsEvent
+        // Subscribe to TrackedObjectsEvent
         subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {
             // Process tracked objects and update landmarks
             trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {

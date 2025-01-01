@@ -61,8 +61,8 @@ public class CameraService extends MicroService {
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            System.out.println(camera.getId() + " camera received CrashedBroadcast.");
-            camera.setStatus(STATUS.ERROR);
+            // TODO Implement this
+            // Handle system-wide crash scenario
             terminate();
         });
     
@@ -75,13 +75,13 @@ public class CameraService extends MicroService {
                     camera.setStatus(STATUS.DOWN);
                     terminate();
                 }
-                else if (nextDetected.getTimestamp() <= currentTick + camera.getFrequency()) {
+                else if (nextDetected.getTimestamp() + camera.getFrequency() <= currentTick ) {
                     // invariant: if one object is an error, the whole service is terminated and the data won't be sent
                     for (DetectedObject object : nextDetected.getDetectedObjects()) {
                         if ("ERROR" == object.getId()) {
                             // Handle camera error scenario
                             camera.setStatus(STATUS.ERROR);
-                            sendBroadcast(new CrashedBroadcast(camera.getId(), "Camera error detected at tick " + currentTick));
+                            sendBroadcast(new CrashedBroadcast("Camara"+camera.getId(), "Camara error detected at tick " + currentTick));
                             terminate();
                             return;
                             

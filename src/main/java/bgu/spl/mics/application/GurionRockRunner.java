@@ -232,7 +232,7 @@ public class GurionRockRunner {
      * @return A map of camera ID to Camera object.
      * @throws Exception If there is an error during parsing.
      */
-    private static Map<Integer, Camera> loadCameras(JsonObject cameraJson) throws Exception {
+     private static Map<Integer, Camera> loadCameras(JsonObject cameraJson) throws Exception {
         String path = Paths.get(cameraJson.get("camera_datas_path").getAsString()).toAbsolutePath().toString();
         FileReader reader = new FileReader(path);
         JsonArray cameraConfigs = cameraJson.getAsJsonArray("CamerasConfigurations");
@@ -240,6 +240,13 @@ public class GurionRockRunner {
         for (int i = 0; i < cameraConfigs.size(); i++) {
             JsonObject camConfig = cameraConfigs.get(i).getAsJsonObject();
             Camera camera = gson.fromJson(camConfig, Camera.class);
+
+            // Load StampedDetectedObjects for the camera
+            String detectedObjectsPath = Paths.get(camConfig.get("detected_objects_path").getAsString()).toAbsolutePath().toString();
+            FileReader detectedObjectsReader = new FileReader(detectedObjectsPath);
+            Vector<StampedDetectedObjects> stampedDetectedObjects = gson.fromJson(detectedObjectsReader, new TypeToken<Vector<StampedDetectedObjects>>() {}.getType());
+            camera.setDetectedObjectsList(new Vector<>(stampedDetectedObjects));
+
             cameras.put(camera.getId(), camera);
         }
         return cameras;
@@ -324,14 +331,6 @@ public class GurionRockRunner {
         }
     }
     
-
-
-
-
-
-
-
-
 
 
     // public static Camera getCamera(int Id){ // TODO- FROM ARRAY OF CAMERAS
