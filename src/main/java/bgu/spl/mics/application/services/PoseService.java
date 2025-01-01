@@ -26,6 +26,11 @@ public class PoseService extends MicroService {
         this.gpsimu = gpsimu;
     }
 
+    public void terminateService(){
+        sendBroadcast(new TerminatedBroadcast("pose"));
+        this.terminate();
+    }
+
 
     /**
      * Initializes the PoseService.
@@ -49,11 +54,22 @@ public class PoseService extends MicroService {
         });
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
-            System.out.println("Received TickBroadcast at tick: " + tickBroadcast.getTick());
-            gpsimu.setCurrentTick(tickBroadcast.getTick());
-            PoseEvent event = new PoseEvent(gpsimu.getCurrentPose());
-            sendEvent(event);
-            System.out.println("PoseEvent sent for tick: " + tickBroadcast.getTick());
+            if (gpsimu.getStatus() == STATUS.UP){
+                System.out.println("Received TickBroadcast at tick: " + tickBroadcast.getTick());
+                gpsimu.setCurrentTick(tickBroadcast.getTick());
+                // invariant- the pose is updated every tick, when the pose is null, the poses are finished
+                if (gpsimu.getCurrentPose() == null){
+                    System.out.println("Poses are finished");
+                    terminateService();
+                }
+                else{
+                    PoseEvent event = new PoseEvent(gpsimu.getCurrentPose());
+                    sendEvent(event);
+                    System.out.println("PoseEvent sent for tick: " + tickBroadcast.getTick());
+                }
+
+            }
+
         });
         
     }

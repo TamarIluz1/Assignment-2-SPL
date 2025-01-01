@@ -29,11 +29,13 @@ public class FusionSlamService extends MicroService {
      */
 
     private final FusionSlam fusionSlam;
+    private int currentTime;
 
     public FusionSlamService(FusionSlam fusionSlam) {
         super("FusionSlamService");
         // TODO Implement this
         this.fusionSlam = fusionSlam;
+        currentTime = 0;
     }
 
     /**
@@ -43,10 +45,9 @@ public class FusionSlamService extends MicroService {
      */
     @Override
     protected void initialize() {
-        // TODO Implement this
 
         messageBus.register(this);
-    
+        
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
             if (terminateBroadcast.getSender() == "time"){
                 terminate();
@@ -55,10 +56,8 @@ public class FusionSlamService extends MicroService {
         });
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
-        subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            // TODO Implement this
-            //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
-            
+        subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {   
+            System.out.println("FusionSlamService received CrashedBroadcast.");         
             terminate();
         });
 
@@ -66,15 +65,17 @@ public class FusionSlamService extends MicroService {
              // Subscribe to TrackedObjectsEvent
         subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {
             // Process tracked objects and update landmarks
-            trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
-                String id = trackedObject.getId();
-                String description = trackedObject.getDescription();
-                Vector<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
-                fusionSlam.addOrUpdateLandmark(id, description, trackedCoordinates);
-            });
-            complete(trackedObjectsEvent, true); // Acknowledge processing is done
+            if (currentTime >= trackedObjectsEvent.getTickTime()){ // we have the pose for this tick
+                handleEvent(trackedObjectsEvent);
+            }
 
-        });
+            else{ // we don't have the pose for this trackedEvent
+                fusionSlam.addUnhandledTrackedObject(trackedObjectsEvent);
+            }
+
+            });
+            
+
 
         // Subscribe to PoseEvent
         subscribeEvent(PoseEvent.class, poseEvent -> {
@@ -85,12 +86,31 @@ public class FusionSlamService extends MicroService {
 
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
-                long currentTick = tickBroadcast.getTick();
-                System.out.println("FusionSlamService received TickBroadcast: " + currentTick);
-            });
+            currentTime = tickBroadcast.getTick();
+            if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
+                for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
+                    if (currentTime >= trackedObjectsEvent.getTickTime()){
+                        handleEvent(trackedObjectsEvent);
+                        fusionSlam.removeHandledTrackedObjects(trackedObjectsEvent);
+                    }
+                    
+                }
+            }
+        });
 
             System.out.println("FusionSlamService initialized successfully.");
         
-        }
+    }
+
+    public void handleEvent(TrackedObjectsEvent trackedObjectsEvent){
+        trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
+            String id = trackedObject.getId();
+            String description = trackedObject.getDescription();
+            Vector<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
+            // to transform the coordinates to the global map
+            fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates, null ) );
+        });
+        complete(trackedObjectsEvent, true); // Acknowledge processing is done
+    }
 }
 

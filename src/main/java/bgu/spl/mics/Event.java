@@ -10,9 +10,4 @@ package bgu.spl.mics;
 
 public interface Event<T> extends Message {
 
-    Future<T> getFuture();
-
-    void complete(T result);
-
-
 }

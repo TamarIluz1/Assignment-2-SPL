@@ -9,16 +9,9 @@ import bgu.spl.mics.Future;
 public class TrackedObjectsEvent implements Event<Boolean>{
     // we need to implement in the future
 
-    @Override
-    public Future<Boolean> getFuture() {
-        // TODO and 
-        // Implementation of the method
-        return future; // Replace with actual implementation
-    }
 
     private final Vector<TrackedObject> trackedObjects; // TODO not sure if we need to use vector- instructions say list
     private final int tickTime;
-    private Future<Boolean> future = new Future<>();
     
     public TrackedObjectsEvent(Vector<TrackedObject> trackedObjects, int tickTime){
         this.trackedObjects = trackedObjects;
@@ -33,11 +26,6 @@ public class TrackedObjectsEvent implements Event<Boolean>{
         return tickTime;
     }
 
-	@Override
-	public void complete(Boolean result) {
-		// TODO Auto-generated method stub
-        future.resolve(result);
-	}
 
 
 }

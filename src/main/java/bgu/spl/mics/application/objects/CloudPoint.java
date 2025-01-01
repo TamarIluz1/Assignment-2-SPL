@@ -10,7 +10,7 @@ public class CloudPoint {
     private final double x;
     private final double y;
 
-    public CloudPoint(int x, int y) {
+    public CloudPoint(double x, double y) {
         this.x = x;
         this.y = y;
     }

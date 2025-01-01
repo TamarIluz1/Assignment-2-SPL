@@ -6,21 +6,15 @@ import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 
 public class DetectObjectsEvent implements Event<Boolean> {
-    @Override
-    public void complete(Boolean result) {
-        if (future != null) {
-            future.resolve(result);
-        }
-    }
+
     private final int tickTime;
     private final StampedDetectedObjects objectDetails;
-    private final Future<Boolean> future;
 
     // Constructor
     public DetectObjectsEvent(int tickTime, StampedDetectedObjects objectDetails) {
         this.tickTime = tickTime;
         this.objectDetails = objectDetails;
-        this.future = new Future<>();
+
     }
 
     // Getter for tick time
@@ -33,11 +27,5 @@ public class DetectObjectsEvent implements Event<Boolean> {
         return objectDetails;
     }
 
-    // Getter for the future
-    public Future<Boolean> getFuture() {
-        return future;
-    }
-
-    // Mark the event as complete
 
 }

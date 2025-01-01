@@ -7,9 +7,6 @@ import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.DetectedObject;
 
-//import java.util.concurrent.Future;
-import bgu.spl.mics.Future;
-
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
@@ -40,7 +37,10 @@ public class CameraService extends MicroService {
         nextDetected = camera.getNextDetectedObjects();
     }
 
-
+    public void terminateService(){
+        sendBroadcast(new TerminatedBroadcast("camera"));
+        this.terminate();
+    }
 
     /**
      * Initializes the CameraService.
@@ -55,7 +55,7 @@ public class CameraService extends MicroService {
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
             if (terminateBroadcast.getSender() == "time"){
                 camera.setStatus(STATUS.DOWN);
-                terminate();
+                terminateService();
             }
         });
     
@@ -63,7 +63,7 @@ public class CameraService extends MicroService {
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             System.out.println(camera.getId() + " camera received CrashedBroadcast.");
             camera.setStatus(STATUS.ERROR);
-            terminate();
+            terminateService();
         });
     
 
@@ -73,7 +73,7 @@ public class CameraService extends MicroService {
                 if (nextDetected == null) {
                     // finished working- no more objects to detect
                     camera.setStatus(STATUS.DOWN);
-                    terminate();
+                    terminateService();
                 }
                 else if (nextDetected.getTimestamp() <= currentTick + camera.getFrequency()) {
                     // invariant: if one object is an error, the whole service is terminated and the data won't be sent
@@ -82,15 +82,14 @@ public class CameraService extends MicroService {
                             // Handle camera error scenario
                             camera.setStatus(STATUS.ERROR);
                             sendBroadcast(new CrashedBroadcast(camera.getId(), "Camera error detected at tick " + currentTick));
-                            terminate();
+                            terminateService();
                             return;
                             
                         }
                     }
                     DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
-                    Future<Boolean> future = sendEvent(e);
+                    sendEvent(e);
                     
-                    complete(e,future.get()); // waiting until the event is resolved TODO CHECK WITH AHMED
                     nextDetected = camera.getNextDetectedObjects();
                 }
             }

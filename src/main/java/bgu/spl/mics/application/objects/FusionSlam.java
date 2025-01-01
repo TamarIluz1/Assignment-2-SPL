@@ -5,18 +5,22 @@ import java.util.Vector;
  * Combines data from multiple sensors (e.g., LiDAR, camera) to build and update a global map.
  * Implements the Singleton pattern to ensure a single instance of FusionSlam exists.
  */
+
+import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 public class FusionSlam {
    
     Vector<LandMark> landmarks;// changed from [] array to Vector bt tamar 31/12
     Vector<Pose> poses;
     int terminatedCounter; 
     Object terminatedCounterLock;
+    Vector<TrackedObjectsEvent> unhandledTrackedObjects;
     final int sensorAmount; // TODO init in main
-    private FusionSlam(int sensorAmount) {
+    private FusionSlam() {
         this.landmarks = new Vector<>();
         this.poses = new Vector<>();
+        unhandledTrackedObjects = new Vector<>();
         terminatedCounter = 0;
-        this.sensorAmount = sensorAmount;
+        this.sensorAmount = 0;
 
     }
      // Singleton instance holder
@@ -55,6 +59,34 @@ public class FusionSlam {
         landmarks.add(landmark);
     }
 
+    public Vector<CloudPoint> convertToGlobal(Vector<CloudPoint> localCoordinates, Pose pose) {
+        Vector<CloudPoint> globalCoordinates = new Vector<>();
+        for (CloudPoint localCP : localCoordinates) {
+            globalCoordinates.add(transform(localCP, pose));
+        }
+        return globalCoordinates;
+    }
+    
+    public CloudPoint transform(CloudPoint localCP, Pose pose) {
+        // Convert yaw angle to radians
+        double yawRadians = Math.toRadians(pose.getYaw());
+        
+        // Extract pose data
+        double robotX = pose.getX();
+        double robotY = pose.getY();
+    
+        // Extract local point data
+        double localX = localCP.getX();
+        double localY = localCP.getY();
+    
+        // Apply rotation and translation
+        double globalX = Math.cos(yawRadians) * localX - Math.sin(yawRadians) * localY + robotX;
+        double globalY = Math.sin(yawRadians) * localX + Math.cos(yawRadians) * localY + robotY;
+    
+        // Return the transformed CloudPoint
+        return new CloudPoint(globalX, globalY); // Z remains unchanged
+    }
+    
     /**
      * Retrieves all landmarks in the system.
      *
@@ -80,19 +112,56 @@ public class FusionSlam {
     }
 
     public void addOrUpdateLandmark(String id, String newDescription, Vector<CloudPoint> newCoordinates) {
+        // Search for existing landmark by ID
+        LandMark existingLandmark = null;
         for (LandMark landmark : landmarks) {
-            if (landmark.getId().equals(id)) {
-                // Update the landmark properties
-                landmark.setCoordinates(newCoordinates);
-                return; // Exit after updating
+            if (landmark.id.equals(id)) {
+                existingLandmark = landmark;
+                break;
             }
         }
-        // If the landmark was not found, add it
-        LandMark newLandmark = new LandMark(id, newDescription, newCoordinates);
-        addLandmark(newLandmark);
-
-    }
     
+        if (existingLandmark == null) {
+            // Add new landmark
+            LandMark newLandmark = new LandMark(id, newDescription, newCoordinates);
+            newLandmark.id = id;
+            newLandmark.description = newDescription;
+            newLandmark.coordinates = newCoordinates;
+            landmarks.add(newLandmark);
+            System.out.println("New landmark added with ID: " + id);
+        } else {
+            // Update existing landmark
+            Vector<CloudPoint> refinedCoordinates = new Vector<>();
+            int existingSize = existingLandmark.coordinates.size();
+            int newSize = newCoordinates.size();
+    
+            // Average coordinates
+            for (int i = 0; i < Math.min(existingSize, newSize); i++) {
+                CloudPoint existingCP = existingLandmark.coordinates.get(i);
+                CloudPoint newCP = newCoordinates.get(i);
+    
+                double avgX = (existingCP.getX() + newCP.getX()) / 2;
+                double avgY = (existingCP.getY() + newCP.getY()) / 2;
+    
+                refinedCoordinates.add(new CloudPoint(avgX, avgY));
+            }
+    
+            // Handle excess coordinates if the new vector is longer
+            for (int i = Math.min(existingSize, newSize); i < newSize; i++) {
+                refinedCoordinates.add(newCoordinates.get(i));
+            }
+    
+            existingLandmark.coordinates = refinedCoordinates;
+    
+            // Update description if different
+            if (!existingLandmark.description.equals(newDescription)) {
+                existingLandmark.description = newDescription;
+            }
+    
+            System.out.println("Updated landmark with ID: " + id);
+        }
+    }
+        
     public int getNumLandmarks() {
         return landmarks.size();
     }
@@ -102,6 +171,19 @@ public class FusionSlam {
             terminatedCounter++;
         }
     }
+
+    public void addUnhandledTrackedObject(TrackedObjectsEvent e){
+        unhandledTrackedObjects.add(e);
+    }
+
+    public Vector<TrackedObjectsEvent> getUnhandledTrackedObjects(){
+        return unhandledTrackedObjects;
+    }
+
+   public void removeHandledTrackedObjects(TrackedObjectsEvent e){
+        unhandledTrackedObjects.remove(e);
+    }
+   
 
     public boolean isFinished(){
         synchronized(terminatedCounterLock){

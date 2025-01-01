@@ -6,17 +6,7 @@ import bgu.spl.mics.Future;
 
 public class ExampleEvent implements Event<String>{
 
-    private Future<String> future = new Future<>();
 
-        @Override
-        public Future<String> getFuture() {
-            return future;
-        }
-    
-        @Override
-        public void complete(String result) {
-            future.resolve(result);
-        }
     private String senderName;
 
 

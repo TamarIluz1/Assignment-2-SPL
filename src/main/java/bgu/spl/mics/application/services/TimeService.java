@@ -3,6 +3,7 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.TickBroadcast;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
 
 
 /**
@@ -58,6 +59,7 @@ public class TimeService extends MicroService {
             System.out.println("TimeService " + getName() + " sent TickBroadcast with tick " + currentTick);
             currentTick++;
         }
+        sendBroadcast(new TerminatedBroadcast("time"));
         terminate();
         });
         tickThread.start();

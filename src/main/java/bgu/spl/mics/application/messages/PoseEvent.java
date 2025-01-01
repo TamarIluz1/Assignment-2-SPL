@@ -7,26 +7,16 @@ public class PoseEvent implements Event<Pose>{
     // we need to implement in the futare
 
     private final Pose pose;
-    private final Future<Pose> future;
+
 
     public PoseEvent(Pose pose) {
         this.pose = pose;
-        future = new Future<>();    
     }
 
     public Pose getPose(){
         return pose;
     }
 
-    @Override
-    public Future<Pose> getFuture() {
-        return future;
-    }
-
-    @Override
-    public void complete(Pose result) {
-        future.resolve(result);
-    }
 
 
 
