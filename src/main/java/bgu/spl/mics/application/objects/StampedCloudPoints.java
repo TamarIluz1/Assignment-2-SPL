@@ -7,8 +7,7 @@ import java.util.ArrayList;
  * Used by the LiDAR system to store and process point cloud data for tracked objects.
  */
 public class StampedCloudPoints {
-    // TODO: Define fields and methods.
-    private String id; //CHANGED BY NOAM 30/12
+    private String id; 
     private int time;
     ArrayList<CloudPoint> cloudPoints;// thet saied listof list of type floats
 

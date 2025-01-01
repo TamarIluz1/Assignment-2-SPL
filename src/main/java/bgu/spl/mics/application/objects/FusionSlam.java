@@ -15,7 +15,7 @@ public class FusionSlam {
     int terminatedCounter; 
     Object terminatedCounterLock;
     List<TrackedObjectsEvent> unhandledTrackedObjects;
-    final int sensorAmount; // TODO init in main
+    int sensorAmount; // TODO init in main
     private FusionSlam() {
         this.landmarks = new ArrayList<>();
         this.poses = new ArrayList<>();
@@ -171,6 +171,11 @@ public class FusionSlam {
         synchronized(terminatedCounterLock){
             terminatedCounter++;
         }
+    }
+
+    public void setSensorAmount(int sensorAmount){
+        this.sensorAmount = sensorAmount;
+
     }
 
     public void addUnhandledTrackedObject(TrackedObjectsEvent e){

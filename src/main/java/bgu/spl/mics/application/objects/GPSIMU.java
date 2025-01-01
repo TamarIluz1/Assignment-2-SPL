@@ -7,7 +7,6 @@ import java.util.ArrayList;
  * Provides information about the robot's position and movement.
  */
 public class GPSIMU {
-    // TODO: Define fields and methods.
     int currentTick;
     STATUS status;
     ArrayList<Pose> poseList;

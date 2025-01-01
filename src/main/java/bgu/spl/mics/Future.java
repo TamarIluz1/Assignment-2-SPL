@@ -47,7 +47,6 @@ public class Future<T> {
      * Resolves the result of this Future object.
      */
 	public synchronized void resolve (T result) {
-		// TODO talk NOT SURE ABOUT THIS
 		if(!isResolved) {
 			this.result = result;
 			isResolved = true;

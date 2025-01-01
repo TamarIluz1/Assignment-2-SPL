@@ -6,7 +6,6 @@ import java.util.Vector;
  * Landmarks are identified and updated by the FusionSlam service.
  */
 public class LandMark {
-    // TODO: Define fields and methods.
     String id;
     String description;
     ArrayList<CloudPoint> coordinates;
@@ -26,11 +25,11 @@ public class LandMark {
         return description;
     }
 
-    public synchronized Vector<CloudPoint> getCoordinates() {
-        return new Vector<>(coordinates);
+    public synchronized ArrayList<CloudPoint> getCoordinates() {
+        return new ArrayList<>(coordinates);
     }
 
-    public synchronized void setCoordinates(Vector<CloudPoint> coordinates) {
+    public synchronized void setCoordinates(ArrayList<CloudPoint> coordinates) {
         this.coordinates.clear();
         this.coordinates.addAll(coordinates);
     }

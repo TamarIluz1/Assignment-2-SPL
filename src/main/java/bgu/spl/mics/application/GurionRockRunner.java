@@ -3,27 +3,24 @@ package bgu.spl.mics.application;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Comparator;
 //import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 //import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import bgu.spl.mics.application.objects.Camera;
-import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.FusionSlam;
 import bgu.spl.mics.application.objects.GPSIMU;
+import bgu.spl.mics.application.objects.LandMark;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
-import bgu.spl.mics.application.objects.TrackedObject;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
 
@@ -32,31 +29,17 @@ import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-// import bgu.spl.mics.application.objects.Camera;
-// import bgu.spl.mics.application.objects.FusionSlam;
-
 import bgu.spl.mics.application.objects.Pose;
-
-// import bgu.spl.mics.MessageBusImpl;
-// import bgu.spl.mics.MicroService;
-// import bgu.spl.mics.application.objects.STATUS;
  import bgu.spl.mics.application.services.CameraService;
  import bgu.spl.mics.application.services.FusionSlamService;
  import bgu.spl.mics.application.services.LiDarService;
  import bgu.spl.mics.application.services.PoseService;
  import bgu.spl.mics.application.services.TimeService;
- //import bgu.spl.mics.example.ServiceCreator;
 
-
-// import com.google.gson.reflect.TypeToken;
-// import java.lang.reflect.Type;
-// import java.util.List;
 
 
 import bgu.spl.mics.application.configuration.Configuration;
-import bgu.spl.mics.application.configuration.CameraConfig;
 import bgu.spl.mics.application.configuration.CameraConfiguration;
-import bgu.spl.mics.application.configuration.LiDarConfig;
 import bgu.spl.mics.application.configuration.LidarConfiguration;
 
 /**
@@ -78,7 +61,7 @@ public class GurionRockRunner {
 
     private static final Gson gson = new Gson();
     private static StatisticalFolder statistics;
-    private static FusionSlam fusionSlam;
+    private static FusionSlam fusionSlam = FusionSlam.getInstance();
     
      public static void main(String[] args) {
         System.out.println("Starting Simulation...");
@@ -88,6 +71,8 @@ public class GurionRockRunner {
             System.exit(1);
         }
         String configFilePath = args[0];
+
+       long startTime = System.currentTimeMillis();
 
         try {
             // Parse configuration
@@ -109,11 +94,29 @@ public class GurionRockRunner {
             // Start services
             startServices(systemConfig);
 
-            System.out.println("Simulation started successfully.");
+            // Wait for simulation to finish
+            waitForSimulationCompletion();
+
+            long endTime = System.currentTimeMillis();
+            int systemRuntime = (int) (endTime - startTime) / 1000;
+            statistics.setSystemRuntime(systemRuntime);
+
+            // Write success output
+           writeSuccessOutput("output_file.json", statistics, fusionSlam.getLandmarks());
+
         } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed to start the simulation: " + e.getMessage());
+            long endTime = System.currentTimeMillis();
+            int systemRuntime = (int) (endTime - startTime) / 1000;
+            statistics.setSystemRuntime(systemRuntime);
+
+            // Write error output
+            writeErrorOutput("error_output.json", e.getMessage(), statistics);
         }
+    }
+
+    private static void waitForSimulationCompletion() {
+        // Implement logic to wait for all services to complete if needed
+        // This can include joining service threads or monitoring shared state
     }
 
     private static String getAbsolutePath(String configFilePath, String relativePath) {
@@ -150,9 +153,9 @@ public class GurionRockRunner {
     }
 
     private static SystemConfig initializeSystem(Configuration config,
-                                                  Map<String, ArrayList<StampedDetectedObjects>> cameraData,
-                                                  ArrayList<StampedCloudPoints> lidarData,
-                                                  ArrayList<Pose> poseData) {
+                                                Map<String, ArrayList<StampedDetectedObjects>> cameraData,
+                                                ArrayList<StampedCloudPoints> lidarData,
+                                                ArrayList<Pose> poseData) {
         Map<Integer, Camera> cameras = new HashMap<>();
         for (CameraConfiguration camConfig : config.getCameras().getCamerasConfigurations()) {
             Camera camera = new Camera(camConfig.getId(), camConfig.getFrequency(),STATUS.UP);
@@ -164,11 +167,17 @@ public class GurionRockRunner {
 
         Map<Integer, LiDarWorkerTracker> lidars = new HashMap<>();
         for (LidarConfiguration lidConfig : config.getLiDarWorkers().getLidarConfigurations()) {
-            LiDarWorkerTracker lidar = new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency(),config.getLiDarWorkers().getLidarsDataPath());
+            LiDarWorkerTracker lidar = new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency(), config.getLiDarWorkers().getLidarsDataPath());
             lidars.put(lidConfig.getId(), lidar);
         }
 
         GPSIMU gpsimu = new GPSIMU(poseData);
+
+        // Calculate the total number of sensors
+        int totalSensors = cameras.size() + lidars.size() + (gpsimu != null ? 1 : 0);
+
+        // Update FusionSlam with the total number of sensors
+        fusionSlam.setSensorAmount(totalSensors);
 
         return new SystemConfig(cameras, lidars, gpsimu, config.getTickTime(), config.getDuration());
     }
@@ -192,6 +201,66 @@ public class GurionRockRunner {
 
         FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
         new Thread(fusionSlamService).start();
+    }
+
+
+
+    
+private static void writeSuccessOutput(String outputFilePath, StatisticalFolder statistics, Map<String, LandMark> landMarks) {
+    try {
+        JsonObject successOutput = new JsonObject();
+        successOutput.addProperty("systemRuntime", statistics.getSystemRuntime());
+        successOutput.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+        successOutput.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+        successOutput.addProperty("numLandmarks", landMarks.size());
+
+        // Add landmarks to JSON
+        JsonObject landMarksJson = new JsonObject();
+        for (Map.Entry<String, LandMark> entry : landMarks.entrySet()) {
+            JsonObject landmarkJson = new JsonObject();
+            landmarkJson.addProperty("id", entry.getValue().getId());
+            landmarkJson.addProperty("description", entry.getValue().getDescription());
+
+            JsonArray coordinatesArray = new JsonArray();
+            for (CloudPoint coordinate : entry.getValue().getCoordinates()) {
+                JsonObject coordinateJson = new JsonObject();
+                coordinateJson.addProperty("x", coordinate.getX());
+                coordinateJson.addProperty("y", coordinate.getY());
+                coordinatesArray.add(coordinateJson);
+            }
+            landmarkJson.add("coordinates", coordinatesArray);
+            landMarksJson.add(entry.getKey(), landmarkJson);
+        }
+        successOutput.add("landMarks", landMarksJson);
+
+        // Write to file
+        try (FileWriter writer = new FileWriter(outputFilePath)) {
+            gson.toJson(successOutput, writer);
+        }
+        System.out.println("Success output written to " + outputFilePath);
+    } catch (IOException e) {
+        System.err.println("Failed to write success output: " + e.getMessage());
+    }
+}
+
+
+    private static void writeErrorOutput(String outputFilePath, String errorMessage, StatisticalFolder statistics) {
+        try {
+            JsonObject errorOutput = new JsonObject();
+            errorOutput.addProperty("error", errorMessage);
+            errorOutput.addProperty("systemRuntime", statistics.getSystemRuntime());
+            errorOutput.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+            errorOutput.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+            errorOutput.addProperty("numErrors", statistics.getNumErrors());
+
+            // Write to file
+            try (FileWriter writer = new FileWriter(outputFilePath)) {
+                gson.toJson(errorOutput, writer);
+            }
+            System.out.println("Error output written to " + outputFilePath);
+        } catch (IOException e) {
+            System.err.println("Failed to write error output: " + e.getMessage());
+        }
     }
 
     public static class SystemConfig {

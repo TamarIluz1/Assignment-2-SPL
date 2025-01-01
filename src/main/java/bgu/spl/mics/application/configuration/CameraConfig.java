@@ -1,6 +1,5 @@
 package bgu.spl.mics.application.configuration;
 import java.util.List;
-import java.util.Vector;
 
 public class CameraConfig {
     private List<CameraConfiguration> CamerasConfigurations;

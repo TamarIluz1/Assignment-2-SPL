@@ -2,8 +2,6 @@ package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
 import bgu.spl.mics.application.objects.TrackedObject;
-import java.util.Vector;
-import bgu.spl.mics.Future;
 import java.util.ArrayList;
 
 
@@ -11,7 +9,7 @@ public class TrackedObjectsEvent implements Event<Boolean>{
     // we need to implement in the future
 
 
-    private final ArrayList<TrackedObject> trackedObjects; // TODO not sure if we need to use vector- instructions say list
+    private final ArrayList<TrackedObject> trackedObjects; 
     private final int tickTime;
     
     public TrackedObjectsEvent(ArrayList<TrackedObject> trackedObjects, int tickTime){

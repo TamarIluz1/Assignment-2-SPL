@@ -33,15 +33,15 @@ public class MessageBusImpl implements MessageBus {
    }
 
    public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-      synchronized(eventSubscribers_l) {
-         eventSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
+      eventSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
+      synchronized(type) {
          eventSubscribers.get(type).add(m);
       }
    }
 
    public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-      synchronized(broadcastSubscribers) {
-         broadcastSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
+      broadcastSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
+      synchronized(type) {
          broadcastSubscribers.get(type).add(m);
       }
    }
@@ -57,39 +57,50 @@ public class MessageBusImpl implements MessageBus {
 
    public void sendBroadcast(Broadcast b) { // we need to synchronize because the broadcastSubscribers is a ConcurrentHashMap
       ConcurrentLinkedQueue<MicroService> subscribers = broadcastSubscribers.get(b.getClass());
-      if(subscribers != null) {
-         for(MicroService m : subscribers) {
-            microServiceQueues.get(m).add(b);
+      for(MicroService m : subscribers) {
+         LinkedBlockingQueue<Message> queue = microServiceQueues.get(m);
+         synchronized(m){
+            queue.add(b);
          }
+         microServiceQueues.get(m).add(b);
       }
+      
    }
 
    public <T> Future<T> sendEvent(Event<T> e) { 
-      // TODO need to implement round-robin
-      ConcurrentLinkedQueue<MicroService> subscribers;
-      synchronized(eventSubscribers_l) { // no other thread can access the eventSubscribers while adding subscribers
-         subscribers = eventSubscribers.get(e.getClass());
-         if (subscribers != null && !subscribers.isEmpty()) {
-            MicroService m = subscribers.poll();
-            if (m != null) {
-               synchronized(microServiceQueues) {
-                  microServiceQueues.get(m).add(e);
-               }
-               subscribers.add(m);
-               Future<T> future = new Future<>();
-               eventFutures.put(e, future);
-               return future;
-            }
-         }
-          return null;
+      //implementing round robin
+      ConcurrentLinkedQueue<MicroService> subscribers = eventSubscribers.get(e.getClass());
+      if (subscribers == null || !subscribers.isEmpty()){
+         return null;
       }
+
+      MicroService m;
+      synchronized(e.getClass()){
+         m = subscribers.poll();
+         if (m!= null){
+            subscribers.offer(m);
+         }
+      }
+      if (m != null) {
+         LinkedBlockingQueue<Message> q = microServiceQueues.get(e);
+         if (q!= null){
+            Future<T> future = new Future<>();
+            eventFutures.put(e, future);
+            synchronized(m){
+               q.offer(e);
+            }
+            return future;
+         }
+         
+      }
+         
+      return null;
    }
 
    public void register(MicroService m) {
       synchronized(microServiceQueues) {
          microServiceQueues.putIfAbsent(m, new LinkedBlockingQueue<>());
       }
-      // TODO need to add the microService to the eventSubscribers and broadcastSubscribers??
    }
 
    public void unregister(MicroService m) {
@@ -107,19 +118,21 @@ public class MessageBusImpl implements MessageBus {
    public Message awaitMessage(MicroService m) throws InterruptedException {
       LinkedBlockingQueue<Message> queue = microServiceQueues.get(m);
       if (queue == null) {
-         throw new IllegalStateException("MicroService is not registered");
+         throw new IllegalStateException(m+ "MicroService is not registered");
       }
-      Message m1 = null;
-      while(m1 == null) {
-         m1 = queue.take();
-         m.wait(); // waiting for the future to be resolved- getting an event/broadcast
-         
+      while(queue.isEmpty()) {
+         try{
+            m.wait();// waiting for the future to be resolved- getting an event/broadcast
+         } catch (InterruptedException e) {
+            e.printStackTrace();
+         }
       }
-      //recomended instade of the while loop 31.12 Tamar
-      //synchronized (queue) {
-      //return queue.take();
-      //}
-      return m1;
+      Message message;
+      synchronized(m){
+         message = queue.poll();
+      }
+      return message;
+
    }
    
 }
