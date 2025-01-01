@@ -3,7 +3,7 @@ package bgu.spl.mics.application;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
-//import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -203,23 +203,36 @@ public class GurionRockRunner {
     }
 
     private static void startServices(SystemConfig config) {
+        CountDownLatch latch = new CountDownLatch(config.cameras.size() + config.lidars.size() + 2);
         config.cameras.values().forEach(camera -> {
             CameraService service = new CameraService(camera);
             new Thread(service).start();
+            latch.countDown();
         });
 
         config.lidars.values().forEach(lidar -> {
             LiDarService service = new LiDarService(lidar);
             new Thread(service).start();
+            latch.countDown();
         });
 
         PoseService poseService = new PoseService(config.gpsimu);
         new Thread(poseService).start();
+        latch.countDown();
                 
         FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
         new Thread(fusionSlamService).start();
-
+        latch.countDown();
+        
+        // we will implement countDownLatch in TimeService
+        
         TimeService timeService = new TimeService(config.tickTime, config.duration);
+        try {
+            latch.await(0, null);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.err.println("Latch await interrupted: " + e.getMessage());
+        }
         new Thread(timeService).start();
 
 

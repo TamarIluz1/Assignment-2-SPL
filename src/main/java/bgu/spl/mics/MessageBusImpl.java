@@ -91,7 +91,6 @@ public class MessageBusImpl implements MessageBus {
             }
             return future;
          }
-         
       }
          
       return null;
