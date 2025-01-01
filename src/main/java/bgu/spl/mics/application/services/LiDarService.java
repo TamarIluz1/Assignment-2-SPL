@@ -14,7 +14,7 @@ import bgu.spl.mics.TickBroadcast;
 
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
-import java.util.Vector;
+import java.util.ArrayList;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
  * sending TrackedObjectsEvents to the FusionSLAM service.
@@ -49,7 +49,7 @@ public class LiDarService extends MicroService {
     @Override
     // psuedoCode- in tick, it will read from jsonFile and add to lastTrackedObjects
     // in DetectObjectsEvent, it will add to detectedEventsToProcess
-    // if object id is in both vectors, it will send the object to the FusionSlam service
+    // if object id is in both ArrayLists, it will send the object to the FusionSlam service
     protected void initialize() {
         // the thread is automatically registered to the relevant broadcasts and events thanks to its type
         // according to what i understand- the lidar working only happens after recieving the event
@@ -73,9 +73,9 @@ public class LiDarService extends MicroService {
                     liDarWorkerTracker.setStatus(STATUS.DOWN);
                     terminateService();
                 }
-                Vector<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsUntilTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
-                Vector<DetectObjectsEvent> handled = new Vector<>();
-                Vector<TrackedObject> newlyTracked = new Vector<>();
+                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsUntilTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
+                ArrayList<DetectObjectsEvent> handled = new ArrayList<>();
+                ArrayList<TrackedObject> newlyTracked = new ArrayList<>();
                 TrackedObject curr;
                 for (StampedCloudPoints s : newCloudPoints){
                     // if the relevant event is availiable- add the tracked objects

@@ -3,9 +3,9 @@ package bgu.spl.mics;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import bgu.spl.mics.application.messages.TerminatedBroadcast;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The MicroService is an abstract class that any micro-service in the system
@@ -30,7 +30,7 @@ public abstract class MicroService implements Runnable {
     private boolean terminated = false;
     private final String name;
     protected final MessageBus messageBus = MessageBusImpl.getInstance();
-    private final Map<Class<? extends Message>, Vector<Callback>> callbacks = new ConcurrentHashMap<>();
+    private final Map<Class<? extends Message>, ArrayList<Callback>> callbacks = new ConcurrentHashMap<>();
 
 
     /**
@@ -65,7 +65,7 @@ public abstract class MicroService implements Runnable {
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
         //TODO: implement this.
         messageBus.subscribeEvent(type, this);
-        callbacks.putIfAbsent(type, new Vector<>());
+        callbacks.putIfAbsent(type, new ArrayList<>());
         callbacks.get(type).add(callback);
  
     }
@@ -93,7 +93,7 @@ public abstract class MicroService implements Runnable {
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
         //TODO: implement this.
         messageBus.subscribeBroadcast(type, this);
-        callbacks.putIfAbsent(type, new Vector<>());
+        callbacks.putIfAbsent(type, new ArrayList<>());
         callbacks.get(type).add(callback);
     }
 
@@ -174,7 +174,7 @@ public abstract class MicroService implements Runnable {
         while (!terminated) {
             try {
                 Message message = messageBus.awaitMessage(this); // getting specific event to handle
-                Vector<Callback> callbackList = callbacks.get(message.getClass()); 
+                List<Callback> callbackList = callbacks.get(message.getClass()); 
                 // getting the order list of actions that need to happen according to the event type
                 if(callbackList != null){
                     for (Callback callback : callbackList) {

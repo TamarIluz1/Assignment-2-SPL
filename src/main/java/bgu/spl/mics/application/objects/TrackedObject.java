@@ -1,5 +1,5 @@
 package bgu.spl.mics.application.objects;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Represents an object tracked by the LiDAR.
@@ -10,9 +10,9 @@ public class TrackedObject {
     String id;
     int time;
     String description;
-    Vector<CloudPoint> coordinates;// changed form array to this
+    ArrayList<CloudPoint> coordinates;// changed form array to this
 
-    public TrackedObject(String id, int time, String description, Vector<CloudPoint> coordinates){
+    public TrackedObject(String id, int time, String description, ArrayList<CloudPoint> coordinates){
         this.id = id;
         this.time = time;
         this.description = description;
@@ -27,7 +27,7 @@ public class TrackedObject {
         return id;
     }
 
-    public Vector<CloudPoint> getCloudPoint(){
+    public ArrayList<CloudPoint> getCloudPoint(){
         return coordinates;
     }
 

@@ -11,7 +11,7 @@ public class Camera {
     final int id;
     int  frequency;
     STATUS status;
-    Vector<StampedDetectedObjects> detectedObjectsList;
+    ArrayList<StampedDetectedObjects> detectedObjectsList;
     Iterator<StampedDetectedObjects> detectedObjectsIterator;
 
     public static Camera fromJson(int id, int frequency) { //FACTORY!
@@ -22,7 +22,7 @@ public class Camera {
         this.id = id;
         this.frequency = frequency;
         this.status = status;
-        this.detectedObjectsList = new Vector<>();
+        this.detectedObjectsList = new ArrayList<>();
         detectedObjectsIterator = detectedObjectsList.iterator();
     }
 
@@ -47,12 +47,12 @@ public class Camera {
         this.status = status;
     }
 
-    public Vector<StampedDetectedObjects> getDetectedObjectsList() {
+    public ArrayList<StampedDetectedObjects> getDetectedObjectsList() {
         return detectedObjectsList;
     }
 
     // to be used in the parsing of the json file camera_data.json
-    public void setDetectedObjectsList(Vector<StampedDetectedObjects> detectedObjectsList) { 
+    public void setDetectedObjectsList(ArrayList<StampedDetectedObjects> detectedObjectsList) { 
         this.detectedObjectsList = detectedObjectsList;
     }
 

@@ -9,7 +9,7 @@ import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.FusionSlam;
 import bgu.spl.mics.application.objects.Pose;
 
-import java.util.Vector;
+import java.util.List;
 
 import bgu.spl.mics.MicroService;
 
@@ -106,7 +106,7 @@ public class FusionSlamService extends MicroService {
         trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
             String id = trackedObject.getId();
             String description = trackedObject.getDescription();
-            Vector<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
+            List<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
             // to transform the coordinates to the global map
             fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates, null ) );
         });

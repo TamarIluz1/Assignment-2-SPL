@@ -1,6 +1,6 @@
 package bgu.spl.mics.application.objects;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Represents the robot's GPS and IMU system.
@@ -10,9 +10,9 @@ public class GPSIMU {
     // TODO: Define fields and methods.
     int currentTick;
     STATUS status;
-    Vector<Pose> poseList;
+    ArrayList<Pose> poseList;
 
-    public GPSIMU(Vector<Pose> PoseList){
+    public GPSIMU(ArrayList<Pose> PoseList){
         currentTick = 0;
         this.poseList = PoseList;
         this.status = STATUS.UP;
@@ -24,13 +24,13 @@ public class GPSIMU {
         return poseList.stream()
                 .filter(pose -> pose.getTime() == currentTick)
                 .findFirst()
-                .orElse(poseList.isEmpty() ? null : poseList.lastElement()); // Safe fallback to the last element
+                .orElse(poseList.isEmpty() ? null : poseList.get(poseList.size() - 1)); // Safe fallback to the last element
     }
 
     public void setCurrentTick(int tick) {
         this.currentTick = tick;
         // Optional: Check if currentTick exceeds available data and adjust status
-        if (!poseList.isEmpty() && tick > poseList.lastElement().getTime()) {
+        if (!poseList.isEmpty() && tick > poseList.get(poseList.size() - 1).getTime()) {
             this.status = STATUS.DOWN; // No more data available for future ticks
         }
     }

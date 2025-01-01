@@ -1,6 +1,6 @@
 package bgu.spl.mics.application.objects;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Represents a group of cloud points corresponding to a specific timestamp.
@@ -10,7 +10,7 @@ public class StampedCloudPoints {
     // TODO: Define fields and methods.
     private String id; //CHANGED BY NOAM 30/12
     private int time;
-    Vector<CloudPoint> cloudPoints;// thet saied listof list of type floats
+    ArrayList<CloudPoint> cloudPoints;// thet saied listof list of type floats
 
     public String getId(){
         return id;
@@ -20,7 +20,7 @@ public class StampedCloudPoints {
         return time;
     }
 
-    public Vector<CloudPoint> getCloudPoints(){
+    public ArrayList<CloudPoint> getCloudPoints(){
         return cloudPoints;
     }
 }

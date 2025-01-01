@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.objects;
 
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 
 
@@ -15,7 +15,7 @@ public class LiDarDataBase {
         private static LiDarDataBase instance = new LiDarDataBase();
     }
 
-    private Vector<StampedCloudPoints> cloudPointsDB;// i added this line
+    private ArrayList<StampedCloudPoints> cloudPointsDB;// i added this line
     private int TrackedCounter;
     Object trackedLock;
 
@@ -31,14 +31,14 @@ public class LiDarDataBase {
 
     
     private LiDarDataBase() {
-        cloudPointsDB = new Vector<>();
+        cloudPointsDB = new ArrayList<>();
         TrackedCounter = 0;
     }
 
 
     // the things we need to add to lastTrackedObject in lidarworker
-    public Vector<StampedCloudPoints> fetchUntilTime(int tickTime){
-        Vector<StampedCloudPoints> toReturn = new Vector<>();
+    public ArrayList<StampedCloudPoints> fetchUntilTime(int tickTime){
+        ArrayList<StampedCloudPoints> toReturn = new ArrayList<>();
         for (StampedCloudPoints s: cloudPointsDB){
             if (s.getTime() == tickTime){
                 toReturn.add(s);

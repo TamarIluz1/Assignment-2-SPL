@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.objects;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 /**
  * Manages the fusion of sensor data for simultaneous localization and mapping (SLAM).
  * Combines data from multiple sensors (e.g., LiDAR, camera) to build and update a global map.
@@ -9,16 +10,16 @@ import java.util.Vector;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 public class FusionSlam {
    
-    Vector<LandMark> landmarks;// changed from [] array to Vector bt tamar 31/12
-    Vector<Pose> poses;
+    List<LandMark> landmarks;// changed from [] array to List bt tamar 31/12
+    List<Pose> poses;
     int terminatedCounter; 
     Object terminatedCounterLock;
-    Vector<TrackedObjectsEvent> unhandledTrackedObjects;
+    List<TrackedObjectsEvent> unhandledTrackedObjects;
     final int sensorAmount; // TODO init in main
     private FusionSlam() {
-        this.landmarks = new Vector<>();
-        this.poses = new Vector<>();
-        unhandledTrackedObjects = new Vector<>();
+        this.landmarks = new ArrayList<>();
+        this.poses = new ArrayList<>();
+        unhandledTrackedObjects = new ArrayList<>();
         terminatedCounter = 0;
         this.sensorAmount = 0;
 
@@ -44,10 +45,10 @@ public class FusionSlam {
     /**
      * Retrieves all poses in the system.
      *
-     * @return A copy of the vector of poses.
+     * @return A copy of the List of poses.
      */
-    public synchronized Vector<Pose> getPoses() {
-        return new Vector<>(poses); // Return a copy for thread safety
+    public synchronized List<Pose> getPoses() {
+        return new ArrayList <>(poses); // Return a copy for thread safety
     }
 
     /**
@@ -59,8 +60,8 @@ public class FusionSlam {
         landmarks.add(landmark);
     }
 
-    public Vector<CloudPoint> convertToGlobal(Vector<CloudPoint> localCoordinates, Pose pose) {
-        Vector<CloudPoint> globalCoordinates = new Vector<>();
+    public List<CloudPoint> convertToGlobal(List<CloudPoint> localCoordinates, Pose pose) {
+        List<CloudPoint> globalCoordinates = new ArrayList<>();
         for (CloudPoint localCP : localCoordinates) {
             globalCoordinates.add(transform(localCP, pose));
         }
@@ -90,10 +91,10 @@ public class FusionSlam {
     /**
      * Retrieves all landmarks in the system.
      *
-     * @return A copy of the vector of landmarks.
+     * @return A copy of the List of landmarks.
      */
-    public synchronized Vector<LandMark> getLandmarks() {
-        return new Vector<>(landmarks); // Return a copy for thread safety
+    public synchronized List<LandMark> getLandmarks() {
+        return new ArrayList <>(landmarks); // Return a copy for thread safety
     }
 
     /**
@@ -111,7 +112,7 @@ public class FusionSlam {
         return null;
     }
 
-    public void addOrUpdateLandmark(String id, String newDescription, Vector<CloudPoint> newCoordinates) {
+    public void addOrUpdateLandmark(String id, String newDescription, ArrayList <CloudPoint> newCoordinates) {
         // Search for existing landmark by ID
         LandMark existingLandmark = null;
         for (LandMark landmark : landmarks) {
@@ -131,7 +132,7 @@ public class FusionSlam {
             System.out.println("New landmark added with ID: " + id);
         } else {
             // Update existing landmark
-            Vector<CloudPoint> refinedCoordinates = new Vector<>();
+            ArrayList<CloudPoint> refinedCoordinates = new ArrayList<>();
             int existingSize = existingLandmark.coordinates.size();
             int newSize = newCoordinates.size();
     
@@ -146,7 +147,7 @@ public class FusionSlam {
                 refinedCoordinates.add(new CloudPoint(avgX, avgY));
             }
     
-            // Handle excess coordinates if the new vector is longer
+            // Handle excess coordinates if the new List is longer
             for (int i = Math.min(existingSize, newSize); i < newSize; i++) {
                 refinedCoordinates.add(newCoordinates.get(i));
             }
@@ -176,7 +177,7 @@ public class FusionSlam {
         unhandledTrackedObjects.add(e);
     }
 
-    public Vector<TrackedObjectsEvent> getUnhandledTrackedObjects(){
+    public List<TrackedObjectsEvent> getUnhandledTrackedObjects(){
         return unhandledTrackedObjects;
     }
 

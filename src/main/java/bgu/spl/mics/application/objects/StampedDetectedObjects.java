@@ -1,5 +1,5 @@
 package bgu.spl.mics.application.objects;
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Represents objects detected by the camera at a specific timestamp.
@@ -7,22 +7,22 @@ import java.util.Vector;
  */
 public class StampedDetectedObjects {
     private final int time;
-    private final Vector<DetectedObject> detectedObjects;
+    private final ArrayList<DetectedObject> detectedObjects;
 
-    public StampedDetectedObjects(Vector<DetectedObject> detectedObjects) {
+    public StampedDetectedObjects(ArrayList<DetectedObject> detectedObjects) {
         this.time = (int) System.currentTimeMillis();
-        this.detectedObjects = new Vector<>(detectedObjects);
+        this.detectedObjects = new ArrayList<>(detectedObjects);
     }
-    public StampedDetectedObjects(Vector<DetectedObject> detectedObjects, int time) {
+    public StampedDetectedObjects(ArrayList<DetectedObject> detectedObjects, int time) {
         this.time = time;
-        this.detectedObjects = new Vector<>(detectedObjects);
+        this.detectedObjects = new ArrayList<>(detectedObjects);
     }
 
     public long getTimestamp() {
         return time;
     }
 
-    public Vector<DetectedObject> getDetectedObjects() {
-        return new Vector<>(detectedObjects);
+    public ArrayList<DetectedObject> getDetectedObjects() {
+        return new ArrayList<>(detectedObjects);
     }
 }
