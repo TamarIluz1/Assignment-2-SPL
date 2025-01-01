@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "GurionRockRunner",
+            "request": "launch",
+            "mainClass": "bgu.spl.mics.application.GurionRockRunner",
+            "projectName": "spl225ass2"
+        },
+        {
+            "type": "java",
+            "request": "launch",
+            "name": "Debug Java App",
+            "mainClass": "src/main/java/bgu/spl/mics/application/GurionRockRunner.java",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "${workspaceFolder}/example_input/configuration_file.json"
+            ],
+            "classPaths": [
+                "${workspaceFolder}/bin"
+            ]
+        }
+    ]
+}

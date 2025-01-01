@@ -6,6 +6,7 @@ import java.util.ArrayList;
 //import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 //import java.util.Scanner;
 import com.google.gson.Gson;
@@ -60,7 +61,7 @@ public class GurionRockRunner {
      */
 
     private static final Gson gson = new Gson();
-    private static StatisticalFolder statistics;
+    private static StatisticalFolder statistics = new StatisticalFolder();
     private static FusionSlam fusionSlam = FusionSlam.getInstance();
     
      public static void main(String[] args) {
@@ -101,9 +102,12 @@ public class GurionRockRunner {
             int systemRuntime = (int) (endTime - startTime) / 1000;
             statistics.setSystemRuntime(systemRuntime);
 
-            // Write success output
-           writeSuccessOutput("output_file.json", statistics, fusionSlam.getLandmarks());
+            // Assuming fusionSlam.getLandmarks() returns List<LandMark>
+            ArrayList<LandMark> landMarkList = fusionSlam.getLandmarks();
+            Map<String, LandMark> landMarkMap = landMarkList.stream()
+                .collect(Collectors.toMap(LandMark::getId, landMark -> landMark));
 
+            writeSuccessOutput("output_file.json", statistics, landMarkMap);
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
             int systemRuntime = (int) (endTime - startTime) / 1000;
@@ -115,8 +119,8 @@ public class GurionRockRunner {
     }
 
     private static void waitForSimulationCompletion() {
-        // Implement logic to wait for all services to complete if needed
-        // This can include joining service threads or monitoring shared state
+        //TODO: Implement this method
+
     }
 
     private static String getAbsolutePath(String configFilePath, String relativePath) {
@@ -141,7 +145,21 @@ public class GurionRockRunner {
     private static ArrayList<StampedCloudPoints> parseLidarData(String filePath) throws IOException {
         Type type = new TypeToken<ArrayList<StampedCloudPoints>>() {}.getType();
         try (FileReader reader = new FileReader(filePath)) {
-            return gson.fromJson(reader, type);
+            // Parse the full JSON
+            ArrayList<StampedCloudPoints> rawData = gson.fromJson(reader, type);
+
+            // Filter out only x and y for CloudPoints
+            for (StampedCloudPoints stampedCloudPoints : rawData) {
+                ArrayList<CloudPoint> filteredCloudPoints = new ArrayList<>();
+                for (double[] point : stampedCloudPoints.getCloudPoints()) {
+                    if (point.length >= 2) {
+                        filteredCloudPoints.add(new CloudPoint(point[0], point[1]));
+                    }
+                }
+                stampedCloudPoints.setCloudPoints(filteredCloudPoints);
+            }
+
+            return rawData;
         }
     }
 
@@ -164,6 +182,8 @@ public class GurionRockRunner {
             }
             cameras.put(camConfig.getId(), camera);
         }
+
+
 
         Map<Integer, LiDarWorkerTracker> lidars = new HashMap<>();
         for (LidarConfiguration lidConfig : config.getLiDarWorkers().getLidarConfigurations()) {
@@ -195,12 +215,14 @@ public class GurionRockRunner {
 
         PoseService poseService = new PoseService(config.gpsimu);
         new Thread(poseService).start();
+                
+        FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
+        new Thread(fusionSlamService).start();
 
         TimeService timeService = new TimeService(config.tickTime, config.duration);
         new Thread(timeService).start();
 
-        FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
-        new Thread(fusionSlamService).start();
+
     }
 
 

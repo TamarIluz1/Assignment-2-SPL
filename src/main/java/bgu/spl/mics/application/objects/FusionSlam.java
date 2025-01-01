@@ -10,11 +10,11 @@ import java.util.List;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 public class FusionSlam {
    
-    List<LandMark> landmarks;// changed from [] array to List bt tamar 31/12
-    List<Pose> poses;
+    ArrayList<LandMark> landmarks;// changed from [] array to List bt tamar 31/12
+    ArrayList<Pose> poses;
     int terminatedCounter; 
     Object terminatedCounterLock;
-    List<TrackedObjectsEvent> unhandledTrackedObjects;
+    ArrayList<TrackedObjectsEvent> unhandledTrackedObjects;
     int sensorAmount; // TODO init in main
     private FusionSlam() {
         this.landmarks = new ArrayList<>();
@@ -93,7 +93,7 @@ public class FusionSlam {
      *
      * @return A copy of the List of landmarks.
      */
-    public synchronized List<LandMark> getLandmarks() {
+    public synchronized ArrayList<LandMark> getLandmarks() {
         return new ArrayList <>(landmarks); // Return a copy for thread safety
     }
 
