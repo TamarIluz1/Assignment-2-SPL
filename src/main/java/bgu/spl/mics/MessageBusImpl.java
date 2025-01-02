@@ -1,9 +1,9 @@
 package bgu.spl.mics;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageBusImpl implements MessageBus {
 
@@ -119,7 +119,16 @@ public class MessageBusImpl implements MessageBus {
       if (queue == null) {
          throw new IllegalStateException(m+ "MicroService is not registered");
       }
-      while(queue.isEmpty()) {
+      // synchronized(m){
+      //    while(queue.isEmpty()) {
+      //       try{
+      //          m.wait();// waiting for the future to be resolved- getting an event/broadcast
+      //       } catch (InterruptedException e) {
+      //          e.printStackTrace();
+      //       }
+      //    }
+      // }
+      while(queue.isEmpty()) {//ask about the difference between the two implementations and this one is not working Tamar 2.1
          try{
             m.wait();// waiting for the future to be resolved- getting an event/broadcast
          } catch (InterruptedException e) {

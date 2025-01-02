@@ -9,8 +9,8 @@ public class StampedDetectedObjects {
     private final int time;
     private final ArrayList<DetectedObject> detectedObjects;
 
-    public StampedDetectedObjects(ArrayList<DetectedObject> detectedObjects) {
-        this.time = (int) System.currentTimeMillis();
+    public StampedDetectedObjects(int time ,ArrayList<DetectedObject> detectedObjects) {
+        this.time = time;
         this.detectedObjects = new ArrayList<>(detectedObjects);
     }
     public StampedDetectedObjects(ArrayList<DetectedObject> detectedObjects, int time) {

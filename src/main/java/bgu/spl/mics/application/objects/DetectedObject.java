@@ -7,11 +7,11 @@ package bgu.spl.mics.application.objects;
 public class DetectedObject {
 
     String id;
-    String descripition;
+    String description;
 
-    public DetectedObject(String id, String descripition) {
+    public DetectedObject(String id, String description) {
         this.id = id;
-        this.descripition = descripition;
+        this.description = description;
     }
 
     // Getters and setters (if needed)
@@ -20,7 +20,7 @@ public class DetectedObject {
     }
 
     public String getDescripition() {
-        return descripition;
+        return description;
     }
 
     

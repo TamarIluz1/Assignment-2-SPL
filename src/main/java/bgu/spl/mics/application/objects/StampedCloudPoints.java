@@ -11,6 +11,12 @@ public class StampedCloudPoints {
     private int time;
     ArrayList<CloudPoint> cloudPoints;// thet saied listof list of type floats
 
+    public StampedCloudPoints(String id, int time, ArrayList<CloudPoint> cloudPoints) {
+        this.id = id;
+        this.time = time;
+        this.cloudPoints = cloudPoints;
+    }
+
     public String getId(){
         return id;
     }

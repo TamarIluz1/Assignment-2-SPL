@@ -2,46 +2,39 @@ package bgu.spl.mics.application;
 
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
-//import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import bgu.spl.mics.application.configuration.CameraConfiguration;
+import bgu.spl.mics.application.configuration.Configuration;
+import bgu.spl.mics.application.configuration.LidarConfiguration;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.FusionSlam;
 import bgu.spl.mics.application.objects.GPSIMU;
 import bgu.spl.mics.application.objects.LandMark;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
+import bgu.spl.mics.application.objects.Pose;
+import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
-import bgu.spl.mics.application.objects.STATUS;
-import bgu.spl.mics.application.objects.StampedCloudPoints;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import bgu.spl.mics.application.objects.Pose;
  import bgu.spl.mics.application.services.CameraService;
  import bgu.spl.mics.application.services.FusionSlamService;
  import bgu.spl.mics.application.services.LiDarService;
  import bgu.spl.mics.application.services.PoseService;
  import bgu.spl.mics.application.services.TimeService;
-
-
-
-import bgu.spl.mics.application.configuration.Configuration;
-import bgu.spl.mics.application.configuration.CameraConfiguration;
-import bgu.spl.mics.application.configuration.LidarConfiguration;
 
 /**
  * The main entry point for the GurionRock Pro Max Ultra Over 9000 simulation.
@@ -63,6 +56,10 @@ public class GurionRockRunner {
     private static final Gson gson = new Gson();
     private static StatisticalFolder statistics = new StatisticalFolder();
     private static FusionSlam fusionSlam = FusionSlam.getInstance();
+
+    private static String cameraDataPath;
+    private static String lidarDataPath;
+    private static String poseDataPath;
     
      public static void main(String[] args) {
         System.out.println("Starting Simulation...");
@@ -80,17 +77,16 @@ public class GurionRockRunner {
             Configuration config = parseConfiguration(configFilePath);
 
             // Resolve paths for data files
-            String cameraDataPath = getAbsolutePath(configFilePath, config.getCameras().getCameraDatasPath());
-            String lidarDataPath = getAbsolutePath(configFilePath, config.getLiDarWorkers().getLidarsDataPath());
-            String poseDataPath = getAbsolutePath(configFilePath, config.getPoseJsonFile());
+            cameraDataPath = getAbsolutePath(configFilePath, config.getCameras().getCameraDatasPath());
+            lidarDataPath = getAbsolutePath(configFilePath, config.getLiDarWorkers().getLidarsDataPath());
+            poseDataPath = getAbsolutePath(configFilePath, config.getPoseJsonFile());
 
             // Parse sensor data
             Map<String, ArrayList<StampedDetectedObjects>> cameraData = parseCameraData(cameraDataPath);
-            ArrayList<StampedCloudPoints> lidarData = parseLidarData(lidarDataPath);
             ArrayList<Pose> poseData = parsePoseData(poseDataPath);
 
             // Initialize system configuration
-            SystemConfig systemConfig = initializeSystem(config, cameraData, lidarData, poseData);
+            SystemConfig systemConfig = initializeSystem(config, cameraData, poseData);
 
             // Start services
             startServices(systemConfig);
@@ -133,6 +129,10 @@ public class GurionRockRunner {
         try (FileReader reader = new FileReader(filePath)) {
             return gson.fromJson(reader, Configuration.class);
         }
+        catch (IOException e) {
+            System.err.println("Failed to parse configuration file: " + e.getMessage());
+            throw e;
+        }
     }
 
     private static Map<String, ArrayList<StampedDetectedObjects>> parseCameraData(String filePath) throws IOException {
@@ -142,26 +142,7 @@ public class GurionRockRunner {
         }
     }
 
-    private static ArrayList<StampedCloudPoints> parseLidarData(String filePath) throws IOException {
-        Type type = new TypeToken<ArrayList<StampedCloudPoints>>() {}.getType();
-        try (FileReader reader = new FileReader(filePath)) {
-            // Parse the full JSON
-            ArrayList<StampedCloudPoints> rawData = gson.fromJson(reader, type);
 
-            // Filter out only x and y for CloudPoints
-            for (StampedCloudPoints stampedCloudPoints : rawData) {
-                ArrayList<CloudPoint> filteredCloudPoints = new ArrayList<>();
-                for (double[] point : stampedCloudPoints.getCloudPoints()) {
-                    if (point.length >= 2) {
-                        filteredCloudPoints.add(new CloudPoint(point[0], point[1]));
-                    }
-                }
-                stampedCloudPoints.setCloudPoints(filteredCloudPoints);
-            }
-
-            return rawData;
-        }
-    }
 
     private static ArrayList<Pose> parsePoseData(String filePath) throws IOException {
         Type type = new TypeToken<ArrayList<Pose>>() {}.getType();
@@ -172,7 +153,6 @@ public class GurionRockRunner {
 
     private static SystemConfig initializeSystem(Configuration config,
                                                 Map<String, ArrayList<StampedDetectedObjects>> cameraData,
-                                                ArrayList<StampedCloudPoints> lidarData,
                                                 ArrayList<Pose> poseData) {
         Map<Integer, Camera> cameras = new HashMap<>();
         for (CameraConfiguration camConfig : config.getCameras().getCamerasConfigurations()) {
@@ -187,14 +167,14 @@ public class GurionRockRunner {
 
         Map<Integer, LiDarWorkerTracker> lidars = new HashMap<>();
         for (LidarConfiguration lidConfig : config.getLiDarWorkers().getLidarConfigurations()) {
-            LiDarWorkerTracker lidar = new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency(), config.getLiDarWorkers().getLidarsDataPath());
+            LiDarWorkerTracker lidar = new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency(), lidarDataPath);
             lidars.put(lidConfig.getId(), lidar);
         }
 
         GPSIMU gpsimu = new GPSIMU(poseData);
 
         // Calculate the total number of sensors
-        int totalSensors = cameras.size() + lidars.size() + (gpsimu != null ? 1 : 0);
+        int totalSensors = cameras.size() + lidars.size() + 1;
 
         // Update FusionSlam with the total number of sensors
         fusionSlam.setSensorAmount(totalSensors);
