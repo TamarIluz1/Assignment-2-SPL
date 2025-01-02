@@ -205,6 +205,15 @@ public class FusionSlam {
         }
     }
 
+    public Pose getPoseByTime(int time){
+        for (Pose p : poses){
+            if (p.getTime() == time){
+                return p;
+            }
+        }
+        return null;
+    }
+
 
     
 }

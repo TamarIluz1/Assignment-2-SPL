@@ -14,9 +14,7 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
-import bgu.spl.mics.application.objects.StatisticalFolder;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
