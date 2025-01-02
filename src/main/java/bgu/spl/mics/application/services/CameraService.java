@@ -73,6 +73,7 @@ public class CameraService extends MicroService {
             if (camera.getStatus() == STATUS.UP) {
                 if (nextDetected == null) {
                     // finished working- no more objects to detect
+                    System.out.println("Camera " + camera.getId() + " terminated at tick " + currentTick);
                     camera.setStatus(STATUS.DOWN);
                     terminateService();
                 }

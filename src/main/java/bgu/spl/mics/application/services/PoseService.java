@@ -40,12 +40,15 @@ public class PoseService extends MicroService {
     protected void initialize() {
 
         messageBus.register(this);
+        System.out.println("PoseService registered to MessageBus.");
+
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
             if (terminateBroadcast.getSender() == "time"){
                 gpsimu.setStatus(STATUS.DOWN);
                 terminate();
             }
         });
+        
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             // TODO Implement this
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
@@ -54,12 +57,13 @@ public class PoseService extends MicroService {
         });
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
+            System.out.println("POSE Received TickBroadcast at tick: " + tickBroadcast.getTick());
             if (gpsimu.getStatus() == STATUS.UP){
-                System.out.println("Received TickBroadcast at tick: " + tickBroadcast.getTick());
                 gpsimu.setCurrentTick(tickBroadcast.getTick());
                 // invariant- the pose is updated every tick, when the pose is null, the poses are finished
                 if (gpsimu.getCurrentPose() == null){
-                    System.out.println("Poses are finished");
+                    System.out.println("POSE out of poses, terminates " + tickBroadcast.getTick());
+
                     terminateService();
                 }
                 else{

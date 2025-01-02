@@ -61,10 +61,10 @@ public class LiDarDataBase {
 
 
     // the things we need to add to lastTrackedObject in lidarworker
-    public ArrayList<StampedCloudPoints> fetchUntilTime(int tickTime){
+    public ArrayList<StampedCloudPoints> fetchByTime(int tickTime){
         ArrayList<StampedCloudPoints> toReturn = new ArrayList<>();
         for (StampedCloudPoints s: cloudPointsDB){
-            if (s.getTime() <= tickTime){
+            if (s.getTime() == tickTime){
                 toReturn.add(s);
             }
         }
@@ -88,9 +88,11 @@ public class LiDarDataBase {
     }
 
     public boolean isFinishedTracking(){
-        synchronized(trackedLock){
-            return (TrackedCounter == cloudPointsDB.size());
+        synchronized (trackedLock) {
+            boolean isFinished = (TrackedCounter == cloudPointsDB.size());
+            return isFinished;
         }
+    
         
     }
 

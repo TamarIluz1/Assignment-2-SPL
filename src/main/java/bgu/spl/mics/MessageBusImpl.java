@@ -45,6 +45,7 @@ public class MessageBusImpl implements MessageBus {
       broadcastSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
       synchronized(type) {
          broadcastSubscribers.get(type).add(m);
+         System.out.println(m.getName() + " subscribed to " + type.getSimpleName());
       }
    }
 
@@ -59,24 +60,30 @@ public class MessageBusImpl implements MessageBus {
    }
 
    @Override
-   public void sendBroadcast(Broadcast b) { // we need to synchronize because the broadcastSubscribers is a ConcurrentHashMap
-      ConcurrentLinkedQueue<MicroService> subscribers = broadcastSubscribers.get(b.getClass());
-      for(MicroService m : subscribers) {
-         LinkedBlockingQueue<Message> queue = microServiceQueues.get(m);
-         // synchronized(m){
-         //    queue.add(b);
-         // }
-         if (queue != null) {
-            queue.offer(b);
-            synchronized (queue) {
-               queue.notifyAll();
-            }
-         }
-         
-      }
-      
-   }
+   public void sendBroadcast(Broadcast b) {
+       ConcurrentLinkedQueue<MicroService> subscribers = broadcastSubscribers.get(b.getClass());
+       if (subscribers != null) {
+           synchronized (subscribers) {
+               for (MicroService m : subscribers) {
+                   LinkedBlockingQueue<Message> queue;
+                   synchronized (microServiceQueues) {
+                       queue = microServiceQueues.get(m); // Ensure thread-safe access
+                       System.out.println("TickBroadcast sent to: " + m.getName());
 
+                   }
+                   if (queue != null) {
+                       queue.offer(b);
+                       synchronized (queue) {
+                           queue.notifyAll();
+                       }
+                   }
+               }
+           }
+       } else {
+           System.err.println("No subscribers for broadcast: " + b.getClass().getSimpleName());
+       }
+   }
+      
    @Override
    public <T> Future<T> sendEvent(Event<T> e) { 
       //implementing round robin

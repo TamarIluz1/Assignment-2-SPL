@@ -63,8 +63,8 @@ public class LiDarWorkerTracker {
     }
 
 
-    public ArrayList<StampedCloudPoints> getNewCloudPointsUntilTime(int detectionTime){
-        return db.fetchUntilTime(detectionTime);// i fixed this line 31/12 Tamar 
+    public ArrayList<StampedCloudPoints> getNewCloudPointsByTime(int detectionTime){
+        return db.fetchByTime(detectionTime);// i fixed this line 31/12 Tamar 
         // it was missing a return statement
     }
 

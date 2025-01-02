@@ -188,6 +188,17 @@ public class GurionRockRunner {
 
     private static void startServices(SystemConfig config) {
         latch = new CountDownLatch(config.cameras.size() + config.lidars.size() + 2);
+
+        PoseService poseService = new PoseService(config.gpsimu);
+        Thread poseThread = new Thread(poseService);
+        poseThread.start();
+        serviceThreads.add(poseThread);
+                
+        FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
+        Thread fusionThread = new Thread(fusionSlamService);
+        fusionThread.start();
+        serviceThreads.add(fusionThread);
+        
         config.cameras.values().forEach(camera -> {
             CameraService service = new CameraService(camera);
             Thread thread = new Thread(service);
@@ -202,15 +213,7 @@ public class GurionRockRunner {
             serviceThreads.add(thread); // Track the thread
         });
 
-        PoseService poseService = new PoseService(config.gpsimu);
-        Thread poseThread = new Thread(poseService);
-        poseThread.start();
-        serviceThreads.add(poseThread);
-                
-        FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
-        Thread fusionThread = new Thread(fusionSlamService);
-        fusionThread.start();
-        serviceThreads.add(fusionThread);
+
         
         // we will implement countDownLatch in TimeService
         

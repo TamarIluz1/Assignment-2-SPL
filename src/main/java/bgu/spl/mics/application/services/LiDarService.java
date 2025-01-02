@@ -16,6 +16,7 @@ import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
 import bgu.spl.mics.application.objects.StatisticalFolder;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 public class LiDarService extends MicroService {
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private final LiDarWorkerTracker liDarWorkerTracker;
+    ArrayList<StampedCloudPoints> ToProcessCloudPoints = new ArrayList<>();
     /**
      * Constructor for LiDarService.
      *
@@ -56,6 +58,7 @@ public class LiDarService extends MicroService {
         // the thread is automatically registered to the relevant broadcasts and events thanks to its type
         // according to what i understand- the lidar working only happens after recieving the event
         messageBus.register(this);
+        
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
             if (terminateBroadcast.getSender() == "time"){
                 System.out.println("recieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
@@ -73,13 +76,18 @@ public class LiDarService extends MicroService {
             if (liDarWorkerTracker.getStatus() == STATUS.UP){
                 if (liDarWorkerTracker.isFinished()){
                     liDarWorkerTracker.setStatus(STATUS.DOWN);
+                    System.out.println("Lidar terminated at tick "+ tickBroadcast.getTick());
                     terminateService();
                 }
-                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsUntilTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
+                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsByTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
+                ArrayList<StampedCloudPoints> processedCloudPoints = new ArrayList<>();
+                for (StampedCloudPoints s : newCloudPoints){
+                    ToProcessCloudPoints.add(s);
+                }
                 ArrayList<DetectObjectsEvent> handled = new ArrayList<>();
                 ArrayList<TrackedObject> newlyTracked = new ArrayList<>();
                 TrackedObject curr;
-                for (StampedCloudPoints s : newCloudPoints){
+                for (StampedCloudPoints s : ToProcessCloudPoints){
                     // if the relevant event is availiable- add the tracked objects
                     if (s.getId() == "ERROR"){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
@@ -89,10 +97,11 @@ public class LiDarService extends MicroService {
                     }
                     for (DetectObjectsEvent e :liDarWorkerTracker.getEventsRecieved()){
                         for (DetectedObject d : e.getObjectDetails().getDetectedObjects()){
-                            System.out.println("LidarService: Detected object: " + d.getId() + s.getId());
+                            
                             if (d.getId().equals(s.getId())){
                                 // we can create the object
                                 handled.add(e);
+                                processedCloudPoints.add(s);
                                 curr = new TrackedObject(d.getId(), tickBroadcast.getTick(), d.getDescripition(),s.getCloudPoints());
                                 newlyTracked.add(curr);
                                 liDarWorkerTracker.reportTracked();
@@ -103,6 +112,9 @@ public class LiDarService extends MicroService {
                     }
                 }
                 liDarWorkerTracker.handleProcessedDetected(handled);
+                for (StampedCloudPoints s : processedCloudPoints){
+                    ToProcessCloudPoints.remove(s);
+                }
                 if (newlyTracked.size() > 0){
                     sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
                 }

@@ -102,6 +102,7 @@ public class FusionSlamService extends MicroService {
 
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
+            System.out.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
             currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
