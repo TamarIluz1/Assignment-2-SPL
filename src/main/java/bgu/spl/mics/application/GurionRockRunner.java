@@ -188,49 +188,63 @@ public class GurionRockRunner {
 
     private static void startServices(SystemConfig config) {
         latch = new CountDownLatch(config.cameras.size() + config.lidars.size() + 2);
-
+    
+        System.out.println("Initializing PoseService...");
         PoseService poseService = new PoseService(config.gpsimu);
-        Thread poseThread = new Thread(poseService);
+        Thread poseThread = new Thread(() -> {
+            try {
+                poseService.run();
+            } catch (Exception e) {
+                System.err.println("PoseService failed: " + e.getMessage());
+            }
+        });
         poseThread.start();
         serviceThreads.add(poseThread);
-                
+    
+        System.out.println("Initializing FusionSlamService...");
         FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
-        Thread fusionThread = new Thread(fusionSlamService);
+        Thread fusionThread = new Thread(() -> {
+            try {
+                fusionSlamService.run();
+            } catch (Exception e) {
+                System.err.println("FusionSlamService failed: " + e.getMessage());
+            }
+        });
         fusionThread.start();
         serviceThreads.add(fusionThread);
-        
+    
+        System.out.println("Initializing CameraServices...");
         config.cameras.values().forEach(camera -> {
             CameraService service = new CameraService(camera);
             Thread thread = new Thread(service);
             thread.start();
             serviceThreads.add(thread);
         });
-
+    
+        System.out.println("Initializing LiDarServices...");
         config.lidars.values().forEach(lidar -> {
-             LiDarService service = new LiDarService(lidar);
+            LiDarService service = new LiDarService(lidar);
             Thread thread = new Thread(service);
             thread.start();
-            serviceThreads.add(thread); // Track the thread
+            serviceThreads.add(thread);
         });
-
-
-        
-        // we will implement countDownLatch in TimeService
-        
+    
+        System.out.println("Waiting for all services to initialize...");
         TimeService timeService = new TimeService(config.tickTime, config.duration);
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.err.println("Latch await interrupted: " + e.getMessage());
-        }
-        Thread timeThread = new Thread(timeService);
+        Thread timeThread = new Thread(() -> {
+            try {
+                latch.await();
+                System.out.println("All services initialized. Starting TimeService...");
+                timeService.run();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("Latch awaiting interrupted: " + e.getMessage());
+            }
+        });
         timeThread.start();
         serviceThreads.add(timeThread);
-
-
     }
-
+    
 
 
     

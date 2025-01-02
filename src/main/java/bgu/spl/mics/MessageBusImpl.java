@@ -42,13 +42,12 @@ public class MessageBusImpl implements MessageBus {
 
    @Override
    public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-      broadcastSubscribers.putIfAbsent(type, new ConcurrentLinkedQueue<>());
-      synchronized(type) {
-         broadcastSubscribers.get(type).add(m);
-         System.out.println(m.getName() + " subscribed to " + type.getSimpleName());
-      }
+       synchronized (broadcastSubscribers) {
+           broadcastSubscribers.computeIfAbsent(type, k -> new ConcurrentLinkedQueue<>()).add(m);
+           System.out.println(m.getName() + " subscribed to " + type + " with hashCode: " + type.hashCode());
+       }
    }
-
+   
    @Override
    public <T> void complete(Event<T> e, T result) {
       @SuppressWarnings("unchecked")
@@ -61,29 +60,37 @@ public class MessageBusImpl implements MessageBus {
 
    @Override
    public void sendBroadcast(Broadcast b) {
+      
        ConcurrentLinkedQueue<MicroService> subscribers = broadcastSubscribers.get(b.getClass());
-       if (subscribers != null) {
-           synchronized (subscribers) {
-               for (MicroService m : subscribers) {
-                   LinkedBlockingQueue<Message> queue;
-                   synchronized (microServiceQueues) {
-                       queue = microServiceQueues.get(m); // Ensure thread-safe access
-                       System.out.println("TickBroadcast sent to: " + m.getName());
-
+       if (subscribers == null) {
+           System.err.println("No subscribers for broadcast: " + b.getClass().getSimpleName());
+           return;
+       }
+   
+       synchronized (subscribers) {
+           for (MicroService m : subscribers) {
+               LinkedBlockingQueue<Message> queue;
+               synchronized (microServiceQueues) {
+                  if (b.getClass().equals(TickBroadcast.class)){
+                     System.out.println(b.toString() + " has " + subscribers.size() + " subscribers.");
+                  }
+               
+                   queue = microServiceQueues.get(m);
+               }
+   
+               if (queue != null) {
+                   queue.offer(b);
+                   synchronized (queue) {
+                       queue.notifyAll(); // Ensure the MicroService waiting on the queue wakes up
                    }
-                   if (queue != null) {
-                       queue.offer(b);
-                       synchronized (queue) {
-                           queue.notifyAll();
-                       }
-                   }
+                   System.out.println(b.getClass().getSimpleName() + " sent to: " + m.getName());
+               } else {
+                   System.err.println("Queue for " + m.getName() + " is null.");
                }
            }
-       } else {
-           System.err.println("No subscribers for broadcast: " + b.getClass().getSimpleName());
        }
    }
-      
+         
    @Override
    public <T> Future<T> sendEvent(Event<T> e) { 
       //implementing round robin
@@ -136,27 +143,15 @@ public class MessageBusImpl implements MessageBus {
 
    @Override
    public Message awaitMessage(MicroService m) throws InterruptedException {
-      LinkedBlockingQueue<Message> queue = microServiceQueues.get(m);
-      if (queue == null) {
-         throw new IllegalStateException(m+ "MicroService is not registered");
-      }
-      return queue.take();
-      // synchronized(m){
-      //    while(queue.isEmpty()) {
-      //       try{
-      //          m.wait();// waiting for the future to be resolved- getting an event/broadcast
-      //       } catch (InterruptedException e) {
-      //          e.printStackTrace();
-      //       }
-      //    }
-      // }
-
-      // Message message;
-      // synchronized(m){
-      //    message = queue.poll();
-      // }
-      // return message;
-
-   }
+       LinkedBlockingQueue<Message> queue = microServiceQueues.get(m);
+       if (queue == null) {
+           throw new IllegalStateException(m + " is not registered.");
+       }
    
+       // Wait for a message
+       Message message = queue.take();
+       System.out.println(m.getName() + " received message: " + message.getClass().getSimpleName());
+       return message;
+   }
+      
 }

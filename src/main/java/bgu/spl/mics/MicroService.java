@@ -146,6 +146,7 @@ public abstract class MicroService implements Runnable {
      * message.
      */
     protected final void terminate() {
+        System.out.println(getName() + " is terminating.");
         this.terminated = true;
         
     }
@@ -164,11 +165,14 @@ public abstract class MicroService implements Runnable {
      */
     @Override
     public final void run() {
+        
         messageBus.register(this);
+        System.out.println(getName() + " thread is running.");
         initialize();
         GurionRockRunner.getLatch().countDown();
-        while (!terminated) {
-            try {
+        try{
+            while (!terminated) {
+
                 Message message = messageBus.awaitMessage(this); // getting specific event to handle
                 List<Callback> callbackList = callbacks.get(message.getClass()); 
                 // getting the order list of actions that need to happen according to the event type
@@ -178,10 +182,14 @@ public abstract class MicroService implements Runnable {
                         callback.call(message);
                     }
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            System.out.println(getName() + " was interrupted.");
+        }finally {
+            System.out.println(getName() + " is terminating and will unregister.");
+            messageBus.unregister(this); // Unregister on termination
+            System.out.println(getName() + " has terminated.");
         }
-        messageBus.unregister(this);
     }
 }
