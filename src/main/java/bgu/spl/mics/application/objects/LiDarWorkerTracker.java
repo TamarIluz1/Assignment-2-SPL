@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.objects;
-import bgu.spl.mics.application.messages.DetectObjectsEvent;
-
 import java.util.ArrayList;
+
+import bgu.spl.mics.application.messages.DetectObjectsEvent;
 
 /**
  * LiDarWorkerTracker is responsible for managing a LiDAR worker.
@@ -9,13 +9,13 @@ import java.util.ArrayList;
  * Each worker tracks objects and sends observations to the FusionSlam service.
  */
 public class LiDarWorkerTracker {
-    private int id;
-    private int frequency;
+    private final int id;
+    private final int frequency;
     private STATUS status;
-    private ArrayList<TrackedObject> lastTrackedObjects;
-    private LiDarDataBase db;// can we delete this? Tamar 31/12
+    private final ArrayList<TrackedObject> lastTrackedObjects;
+    private final LiDarDataBase db;// can we delete this? Tamar 31/12
     // we need this to relate to the db. but we can implement differently , noam
-    private ArrayList<DetectObjectsEvent> eventsRecieved;
+    private final ArrayList<DetectObjectsEvent> eventsRecieved;
 
 
     public LiDarWorkerTracker(int id, int frequency,String pathToDataFile) {// added pathToDataFile Tamar 31/12

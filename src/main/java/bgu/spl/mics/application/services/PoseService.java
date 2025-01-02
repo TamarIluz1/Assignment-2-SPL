@@ -1,12 +1,12 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.objects.GPSIMU;
-import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.objects.GPSIMU;
+import bgu.spl.mics.application.objects.STATUS;
 
 /**
  * PoseService is responsible for maintaining the robot's current pose (position and orientation)
@@ -14,7 +14,7 @@ import bgu.spl.mics.application.messages.TickBroadcast;
  */
 public class PoseService extends MicroService {
 
-    private GPSIMU gpsimu;
+    private final  GPSIMU gpsimu;
     /**
      * Constructor for PoseService.
      *
@@ -22,7 +22,6 @@ public class PoseService extends MicroService {
      */
     public PoseService(GPSIMU gpsimu) {
         super("PoseService");
-        // TODO Implement this
         this.gpsimu = gpsimu;
     }
 
@@ -43,7 +42,7 @@ public class PoseService extends MicroService {
         System.out.println("PoseService registered to MessageBus.");
 
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
-            if (terminateBroadcast.getSender() == "time"){
+            if (terminateBroadcast.getSender().equals("time")){
                 gpsimu.setStatus(STATUS.DOWN);
                 terminate();
             }

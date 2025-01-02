@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -25,7 +24,7 @@ public class LiDarDataBase {
 
     private ArrayList<StampedCloudPoints> cloudPointsDB;// i added this line
     private int TrackedCounter;
-    Object trackedLock = new Object();
+    final Object trackedLock = new Object();
 
     /**
      * Returns the singleton instance of LiDarDataBase.
@@ -42,12 +41,11 @@ public class LiDarDataBase {
 
 
     private void loadDataFromFile(String filePath) {
-        Gson gson = new Gson();
         try  {
 
             cloudPointsDB = parseLidarData(filePath);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error loading LiDAR data from file: " + e.getMessage());
 
         }
     }
@@ -73,7 +71,7 @@ public class LiDarDataBase {
 
     public StampedCloudPoints fetchCloudPoints(int tickTime, String id){
         for (StampedCloudPoints s : cloudPointsDB){
-            if (s.getId() == id & s.getTime() == tickTime){
+            if (s.getId().equals(id) & s.getTime() == tickTime){
                 return s;
             }
         }

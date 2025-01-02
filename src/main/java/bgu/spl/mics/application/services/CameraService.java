@@ -1,16 +1,14 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.application.messages.DetectObjectsEvent;
-import bgu.spl.mics.application.messages.TerminatedBroadcast;
-import bgu.spl.mics.application.messages.CrashedBroadcast;
-
-import bgu.spl.mics.application.objects.Camera;
-import bgu.spl.mics.application.objects.DetectedObject;
-
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.CrashedBroadcast;
+import bgu.spl.mics.application.messages.DetectObjectsEvent;
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.objects.Camera;
+import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
@@ -24,7 +22,7 @@ import bgu.spl.mics.application.objects.StatisticalFolder;
  */
 public class CameraService extends MicroService {
 
-    private Camera camera;
+    private final  Camera camera;
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private StampedDetectedObjects nextDetected;
     /**
@@ -54,7 +52,7 @@ public class CameraService extends MicroService {
         messageBus.register(this);
     
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
-            if (terminateBroadcast.getSender() == "time"){
+            if (terminateBroadcast.getSender().equals("time")){
                 camera.setStatus(STATUS.DOWN);
                 terminateService();
             }
@@ -80,7 +78,7 @@ public class CameraService extends MicroService {
                 else if (nextDetected.getTimestamp() + camera.getFrequency() <= currentTick ) {
                     // invariant: if one object is an error, the whole service is terminated and the data won't be sent
                     for (DetectedObject object : nextDetected.getDetectedObjects()) {
-                        if ("ERROR" == object.getId()) {
+                        if (object.getId().equals("ERROR")) {
                             // Handle camera error scenario
                             camera.setStatus(STATUS.ERROR);
                             sendBroadcast(new CrashedBroadcast("camera " +camera.getId(), "Camera error detected at tick " + currentTick));

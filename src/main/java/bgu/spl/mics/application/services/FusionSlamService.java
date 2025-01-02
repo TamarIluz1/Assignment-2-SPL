@@ -1,5 +1,8 @@
 package bgu.spl.mics.application.services;
 
+import java.util.ArrayList;
+
+import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -9,10 +12,6 @@ import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.FusionSlam;
 import bgu.spl.mics.application.objects.Pose;
 import bgu.spl.mics.application.objects.StatisticalFolder;
-
-import java.util.ArrayList;
-
-import bgu.spl.mics.MicroService;
 
 /**
  * FusionSlamService integrates data from multiple sensors to build and update
@@ -35,7 +34,6 @@ public class FusionSlamService extends MicroService {
 
     public FusionSlamService(FusionSlam fusionSlam) {
         super("FusionSlamService");
-        // TODO Implement this
         this.fusionSlam = fusionSlam;
         currentTime = 0;
     }
@@ -52,13 +50,12 @@ public class FusionSlamService extends MicroService {
         
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
             System.out.println("FusionSlamService received TerminatedBroadcast from " + terminateBroadcast.getSender());
-            if (terminateBroadcast.getSender() == "time"){
+            if (terminateBroadcast.getSender().equals("time")){
                 System.out.println("FusionSlamService received TerminatedBroadcast from TimeService.");
                 StatisticalFolder.getInstance().setSystemRuntime(currentTime);
                 terminate();
 
             }
-
             else{
                 fusionSlam.reportTracked();
                 if (fusionSlam.isFinished()){
@@ -107,16 +104,18 @@ public class FusionSlamService extends MicroService {
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             System.out.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
-            currentTime = tickBroadcast.getTick();     
+            currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
                     if (currentTime >= trackedObjectsEvent.getTickTime() & poseCounter > currentTime){
                         handleEvent(trackedObjectsEvent, trackedObjectsEvent.getTickTime());
                         fusionSlam.removeHandledTrackedObjects(trackedObjectsEvent);
-                    }
-                    
                 }
+                        
             }
+
+        }
+
             
         });
 

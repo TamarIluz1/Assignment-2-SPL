@@ -1,9 +1,9 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
 
 
 /**
@@ -20,12 +20,12 @@ public class TimeService extends MicroService {
      */
 
     long TickTime,Duration;
+    boolean isTerminated = false;
 
     
 
     public TimeService(long TickTime, long Duration) {
         super("TimeService");
-        // TODO Implement this
         this.TickTime = TickTime;
         this.Duration = Duration;
     }
@@ -44,7 +44,8 @@ public class TimeService extends MicroService {
         });
 
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
-            if (terminateBroadcast.getSender() == "fusionslam"){
+            if (terminateBroadcast.getSender().equals("fusionslam")){
+                isTerminated = true;
                 terminate();
             }
         });
@@ -52,9 +53,9 @@ public class TimeService extends MicroService {
         // Start a new thread to handle tick broadcasting
         Thread tickThread = new Thread(() -> {
         int currentTick = 1;
-        while (currentTick <= Duration) {
+        while (currentTick <= Duration && !isTerminated) {
             try {
-                Thread.sleep(TickTime);
+                Thread.sleep(TickTime*70);// added delay Tamar 3.1
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;

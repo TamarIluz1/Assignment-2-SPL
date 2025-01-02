@@ -31,8 +31,8 @@ import bgu.spl.mics.application.objects.Pose;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
- import bgu.spl.mics.application.services.CameraService;
- import bgu.spl.mics.application.services.FusionSlamService;
+import bgu.spl.mics.application.services.CameraService;
+import bgu.spl.mics.application.services.FusionSlamService;
  import bgu.spl.mics.application.services.LiDarService;
  import bgu.spl.mics.application.services.PoseService;
  import bgu.spl.mics.application.services.TimeService;
@@ -55,8 +55,8 @@ public class GurionRockRunner {
      */
 
     private static final Gson gson = new Gson();
-    private static StatisticalFolder statistics = StatisticalFolder.getInstance();
-    private static FusionSlam fusionSlam = FusionSlam.getInstance();
+    private static final StatisticalFolder statistics = StatisticalFolder.getInstance();
+    private static final  FusionSlam fusionSlam = FusionSlam.getInstance();
     static CountDownLatch latch;
 
     private static final List<Thread> serviceThreads = new ArrayList<>();

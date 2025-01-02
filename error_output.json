@@ -1,1 +1,1 @@
-{"error":"Cannot invoke \"java.util.concurrent.TimeUnit.toNanos(long)\" because \"unit\" is null","systemRuntime":290,"numDetectedObjects":0,"numTrackedObjects":0,"numErrors":0}
+{"error":"...\\example_input\\configuration_file.json (The system cannot find the path specified)","systemRuntime":0,"numDetectedObjects":0,"numTrackedObjects":0,"numLandMarks":0}

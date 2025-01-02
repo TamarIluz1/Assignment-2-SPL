@@ -1,21 +1,20 @@
 package bgu.spl.mics.application.services;
 
+import java.util.ArrayList;
+
+import bgu.spl.mics.MessageBus;
+import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
-import bgu.spl.mics.application.objects.TrackedObject;
-import bgu.spl.mics.MessageBus;
-import bgu.spl.mics.MessageBusImpl;
-import bgu.spl.mics.application.messages.TickBroadcast;
-
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
-
-import java.util.ArrayList;
+import bgu.spl.mics.application.objects.TrackedObject;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
  * sending TrackedObjectsEvents to the FusionSLAM service.
@@ -58,7 +57,7 @@ public class LiDarService extends MicroService {
         messageBus.register(this);
         
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
-            if (terminateBroadcast.getSender() == "time"){
+            if (terminateBroadcast.getSender().equals("time")){
                 System.out.println("recieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
                 terminateService();
             }
@@ -87,7 +86,7 @@ public class LiDarService extends MicroService {
                 TrackedObject curr;
                 for (StampedCloudPoints s : ToProcessCloudPoints){
                     // if the relevant event is availiable- add the tracked objects
-                    if (s.getId() == "ERROR"){
+                    if (s.getId().equals("ERROR")){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
                         sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
                         terminateService();
@@ -113,7 +112,7 @@ public class LiDarService extends MicroService {
                 for (StampedCloudPoints s : processedCloudPoints){
                     ToProcessCloudPoints.remove(s);
                 }
-                if (newlyTracked.size() > 0){
+                if (!newlyTracked.isEmpty()){
                     sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
                 }
             }

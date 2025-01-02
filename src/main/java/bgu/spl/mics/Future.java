@@ -19,7 +19,6 @@ public class Future<T> {
 	 * This should be the the only public constructor in this class.
 	 */
 	public Future() {
-		//TODO: implement this
 		result = null;
 		isResolved = false;
 	}
@@ -73,7 +72,6 @@ public class Future<T> {
      *         elapsed, return null.
      */
 	public synchronized T get(long timeout, TimeUnit unit) {
-		//TODO: implement this.
 		if(!isResolved) {
 			try {
 				long timeoutMillis = unit.toMillis(timeout);

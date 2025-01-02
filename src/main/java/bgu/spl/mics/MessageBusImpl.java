@@ -9,14 +9,14 @@ public class MessageBusImpl implements MessageBus {
 
    // The singleton instance of the message bus
    private static class SingletonHolder {
-      private static MessageBusImpl instance = new MessageBusImpl();
+      private static final MessageBusImpl instance = new MessageBusImpl();
    }
     
-   private  Map<Class<? extends Event>, ConcurrentLinkedQueue<MicroService>> eventSubscribers;
-   private  Map<Class<? extends Broadcast>, ConcurrentLinkedQueue<MicroService>> broadcastSubscribers;
-   private  Map<MicroService, LinkedBlockingQueue<Message>> microServiceQueues;
-   private  Map<Event, Future> eventFutures;
-   private Object eventSubscribers_l = new Object();
+   private final Map<Class<? extends Event>, ConcurrentLinkedQueue<MicroService>> eventSubscribers;
+   private final  Map<Class<? extends Broadcast>, ConcurrentLinkedQueue<MicroService>> broadcastSubscribers;
+   private final  Map<MicroService, LinkedBlockingQueue<Message>> microServiceQueues;
+   private final  Map<Event, Future> eventFutures;
+   private final Object eventSubscribers_l = new Object();
    
    private MessageBusImpl() {
       eventSubscribers = new ConcurrentHashMap<>();
