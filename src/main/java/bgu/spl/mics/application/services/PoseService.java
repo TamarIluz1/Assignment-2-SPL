@@ -73,6 +73,10 @@ public class PoseService extends MicroService {
                 }
 
             }
+            else if(gpsimu.getStatus().equals(STATUS.DOWN)){
+                System.out.println("POSE Terminating at tick: " + tickBroadcast.getTick());
+                terminateService();
+            }
 
         });
 

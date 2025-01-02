@@ -10,7 +10,7 @@ import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.TrackedObject;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
-import bgu.spl.mics.TickBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
 
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;

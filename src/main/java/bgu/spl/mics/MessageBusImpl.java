@@ -44,9 +44,10 @@ public class MessageBusImpl implements MessageBus {
    public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
        synchronized (broadcastSubscribers) {
            broadcastSubscribers.computeIfAbsent(type, k -> new ConcurrentLinkedQueue<>()).add(m);
-           System.out.println(m.getName() + " subscribed to " + type + " with hashCode: " + type.hashCode());
+
        }
    }
+   
    
    @Override
    public <T> void complete(Event<T> e, T result) {
@@ -62,6 +63,7 @@ public class MessageBusImpl implements MessageBus {
    public void sendBroadcast(Broadcast b) {
       
        ConcurrentLinkedQueue<MicroService> subscribers = broadcastSubscribers.get(b.getClass());
+       
        if (subscribers == null) {
            System.err.println("No subscribers for broadcast: " + b.getClass().getSimpleName());
            return;
