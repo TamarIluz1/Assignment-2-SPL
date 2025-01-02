@@ -25,7 +25,7 @@ public class LiDarDataBase {
 
     private ArrayList<StampedCloudPoints> cloudPointsDB;// i added this line
     private int TrackedCounter;
-    Object trackedLock;
+    Object trackedLock = new Object();
 
     /**
      * Returns the singleton instance of LiDarDataBase.
@@ -64,7 +64,7 @@ public class LiDarDataBase {
     public ArrayList<StampedCloudPoints> fetchUntilTime(int tickTime){
         ArrayList<StampedCloudPoints> toReturn = new ArrayList<>();
         for (StampedCloudPoints s: cloudPointsDB){
-            if (s.getTime() == tickTime){
+            if (s.getTime() <= tickTime){
                 toReturn.add(s);
             }
         }

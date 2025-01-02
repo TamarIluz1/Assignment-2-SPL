@@ -93,7 +93,7 @@ public class MessageBusImpl implements MessageBus {
          }
       }
       if (m != null) {
-         LinkedBlockingQueue<Message> q = microServiceQueues.get(e);
+         LinkedBlockingQueue<Message> q = microServiceQueues.get(m);
          if (q!= null){
             Future<T> future = new Future<>();
             eventFutures.put(e, future);

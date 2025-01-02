@@ -71,7 +71,7 @@ public class LiDarService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             if (liDarWorkerTracker.getStatus() == STATUS.UP){
-                if (liDarWorkerTracker.isFinished()){//this is not correct !!!!. it can finish working and the time is not finished
+                if (liDarWorkerTracker.isFinished()){
                     liDarWorkerTracker.setStatus(STATUS.DOWN);
                     terminateService();
                 }
@@ -89,7 +89,8 @@ public class LiDarService extends MicroService {
                     }
                     for (DetectObjectsEvent e :liDarWorkerTracker.getEventsRecieved()){
                         for (DetectedObject d : e.getObjectDetails().getDetectedObjects()){
-                            if (d.getId() == s.getId()){
+                            System.out.println("LidarService: Detected object: " + d.getId() + s.getId());
+                            if (d.getId().equals(s.getId())){
                                 // we can create the object
                                 handled.add(e);
                                 curr = new TrackedObject(d.getId(), tickBroadcast.getTick(), d.getDescripition(),s.getCloudPoints());
@@ -97,12 +98,14 @@ public class LiDarService extends MicroService {
                                 liDarWorkerTracker.reportTracked();
                                 liDarWorkerTracker.addLastTrackedObject(curr);
                             }
-                            StatisticalFolder.getInstance().incrementTrackedObjects(1);
+                            
                         }
                     }
                 }
                 liDarWorkerTracker.handleProcessedDetected(handled);
-                sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
+                if (newlyTracked.size() > 0){
+                    sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
+                }
             }
         });
 

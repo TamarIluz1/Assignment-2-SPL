@@ -13,7 +13,7 @@ public class FusionSlam {
     ArrayList<LandMark> landmarks;// changed from [] array to List bt tamar 31/12
     ArrayList<Pose> poses;
     int terminatedCounter; 
-    Object terminatedCounterLock;
+    Object terminatedCounterLock= new Object();
     ArrayList<TrackedObjectsEvent> unhandledTrackedObjects;
     int sensorAmount; // TODO init in main
     private FusionSlam() {
