@@ -13,12 +13,23 @@ public class StatisticalFolder {
     private int systemRuntime;// changed to long from int
     private final AtomicInteger numDetectedObjects;
     private final AtomicInteger numTrackedObjects;
-    private final AtomicInteger numErrors;
+    private final AtomicInteger numLandMarks;
 
-    public StatisticalFolder() {
+    private StatisticalFolder() {
         this.numDetectedObjects = new AtomicInteger(0);
         this.numTrackedObjects = new AtomicInteger(0);
-        this.numErrors = new AtomicInteger(0);
+        this.numLandMarks = new AtomicInteger(0);
+    }
+
+    private static class StatisticalFolderHolder {
+        private static final StatisticalFolder instance = new StatisticalFolder();
+    }
+
+    public static StatisticalFolder getInstance() {
+        if(StatisticalFolderHolder.instance == null) {
+            return new StatisticalFolder();
+        }
+        return StatisticalFolderHolder.instance;
     }
 
     public void setSystemRuntime(int runtime) {
@@ -33,8 +44,8 @@ public class StatisticalFolder {
         numTrackedObjects.addAndGet(count);
     }
 
-    public void incrementErrors() {
-        numErrors.incrementAndGet();
+    public void incrementLandMarks() {
+        numLandMarks.incrementAndGet();
     }
 
     public int getSystemRuntime() {
@@ -49,8 +60,8 @@ public class StatisticalFolder {
         return numTrackedObjects.get();
     }
 
-    public int getNumErrors() {
-        return numErrors.get();
+    public int getNumLandMarks() {
+        return numLandMarks.get();
     }
 
 }

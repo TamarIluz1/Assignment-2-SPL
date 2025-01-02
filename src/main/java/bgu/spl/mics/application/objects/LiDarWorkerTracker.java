@@ -80,6 +80,7 @@ public class LiDarWorkerTracker {
 
     public void reportTracked(){
         db.reportTracked();
+        StatisticalFolder.getInstance().incrementTrackedObjects(frequency);
     }
 
 

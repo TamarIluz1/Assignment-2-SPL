@@ -8,6 +8,7 @@ import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.FusionSlam;
 import bgu.spl.mics.application.objects.Pose;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 
 import java.util.ArrayList;
 
@@ -50,14 +51,29 @@ public class FusionSlamService extends MicroService {
         
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
             if (terminateBroadcast.getSender() == "time"){
+                StatisticalFolder.getInstance().setSystemRuntime(currentTime);
                 terminate();
+
             }
+
+            else{
+                fusionSlam.reportTracked();
+                if (fusionSlam.isFinished()){
+                    // closing the whole system
+                    StatisticalFolder.getInstance().setSystemRuntime(currentTime);
+                    sendBroadcast(new TerminatedBroadcast("fusionslam"));
+                    terminate();
+                }
+                
+            }
+            
             
         });
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {   
-            System.out.println("FusionSlamService received CrashedBroadcast.");         
+            System.out.println("FusionSlamService received CrashedBroadcast.");       
+            StatisticalFolder.getInstance().setSystemRuntime(currentTime);
             terminate();
         });
 
@@ -98,7 +114,7 @@ public class FusionSlamService extends MicroService {
             }
         });
 
-            System.out.println("FusionSlamService initialized successfully.");
+        System.out.println("FusionSlamService initialized successfully.");
         
     }
 

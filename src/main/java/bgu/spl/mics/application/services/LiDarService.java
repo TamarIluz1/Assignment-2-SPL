@@ -14,6 +14,8 @@ import bgu.spl.mics.TickBroadcast;
 
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
+import bgu.spl.mics.application.objects.StatisticalFolder;
+
 import java.util.ArrayList;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
@@ -95,6 +97,7 @@ public class LiDarService extends MicroService {
                                 liDarWorkerTracker.reportTracked();
                                 liDarWorkerTracker.addLastTrackedObject(curr);
                             }
+                            StatisticalFolder.getInstance().incrementTrackedObjects(1);
                         }
                     }
                 }
@@ -107,7 +110,8 @@ public class LiDarService extends MicroService {
             liDarWorkerTracker.addNewDetectEvent(detectObjectsEvent);
         });
 
-
+        System.out.println("LidarService initialized successfully.");
+        
     
     }
 

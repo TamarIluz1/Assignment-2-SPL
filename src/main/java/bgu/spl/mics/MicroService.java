@@ -2,8 +2,8 @@ package bgu.spl.mics;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-
+import java.util.concurrent.CountDownLatch;
+import bgu.spl.mics.application.GurionRockRunner;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -166,6 +166,7 @@ public abstract class MicroService implements Runnable {
     public final void run() {
         messageBus.register(this);
         initialize();
+        GurionRockRunner.getLatch().countDown();
         while (!terminated) {
             try {
                 Message message = messageBus.awaitMessage(this); // getting specific event to handle

@@ -36,18 +36,22 @@ public class TimeService extends MicroService {
      */
     @Override
     protected void initialize() {
-        // TODO Implement this
 
         messageBus.register(this);
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            // TODO Implement this
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
             terminate();
         });
 
+        subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
+            if (terminateBroadcast.getSender() == "fusionslam"){
+                terminate();
+            }
+        });
+
         // Start a new thread to handle tick broadcasting
         Thread tickThread = new Thread(() -> {
-        int currentTick = 0;
+        int currentTick = 1;
         while (currentTick <= Duration) {
             try {
                 Thread.sleep(TickTime);
@@ -61,6 +65,8 @@ public class TimeService extends MicroService {
         }
         sendBroadcast(new TerminatedBroadcast("time"));
         terminate();
+        
+        
         });
         tickThread.start();
 

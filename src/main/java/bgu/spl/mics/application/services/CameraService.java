@@ -13,6 +13,7 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.TickBroadcast;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 
 /**
  * CameraService is responsible for processing data from the camera and
@@ -87,7 +88,9 @@ public class CameraService extends MicroService {
                             
                             
                         }
+                        StatisticalFolder.getInstance().incrementDetectedObjects(1);
                     }
+                    
                     DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
                     sendEvent(e);
                     
@@ -95,6 +98,8 @@ public class CameraService extends MicroService {
                 }
             }
         });
+        System.out.println("CamaraService initialized successfully.");
+        
     }
     
 }

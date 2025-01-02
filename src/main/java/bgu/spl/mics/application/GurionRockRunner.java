@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
@@ -54,13 +55,21 @@ public class GurionRockRunner {
      */
 
     private static final Gson gson = new Gson();
-    private static StatisticalFolder statistics = new StatisticalFolder();
+    private static StatisticalFolder statistics = StatisticalFolder.getInstance();
     private static FusionSlam fusionSlam = FusionSlam.getInstance();
+    static CountDownLatch latch;
+
+    private static final List<Thread> serviceThreads = new ArrayList<>();
+
 
     private static String cameraDataPath;
     private static String lidarDataPath;
     private static String poseDataPath;
     
+    public static CountDownLatch getLatch() {
+        return latch;
+    }
+
      public static void main(String[] args) {
         System.out.println("Starting Simulation...");
 
@@ -70,11 +79,10 @@ public class GurionRockRunner {
         }
         String configFilePath = args[0];
 
-       long startTime = System.currentTimeMillis();
-
         try {
             // Parse configuration
             Configuration config = parseConfiguration(configFilePath);
+
 
             // Resolve paths for data files
             cameraDataPath = getAbsolutePath(configFilePath, config.getCameras().getCameraDatasPath());
@@ -87,16 +95,13 @@ public class GurionRockRunner {
 
             // Initialize system configuration
             SystemConfig systemConfig = initializeSystem(config, cameraData, poseData);
-
+            
             // Start services
             startServices(systemConfig);
 
             // Wait for simulation to finish
             waitForSimulationCompletion();
 
-            long endTime = System.currentTimeMillis();
-            int systemRuntime = (int) (endTime - startTime) / 1000;
-            statistics.setSystemRuntime(systemRuntime);
 
             // Assuming fusionSlam.getLandmarks() returns List<LandMark>
             ArrayList<LandMark> landMarkList = fusionSlam.getLandmarks();
@@ -105,17 +110,16 @@ public class GurionRockRunner {
 
             writeSuccessOutput("output_file.json", statistics, landMarkMap);
         } catch (Exception e) {
-            long endTime = System.currentTimeMillis();
-            int systemRuntime = (int) (endTime - startTime) / 1000;
-            statistics.setSystemRuntime(systemRuntime);
 
             // Write error output
             writeErrorOutput("error_output.json", e.getMessage(), statistics);
         }
     }
 
-    private static void waitForSimulationCompletion() {
-        //TODO: Implement this method
+    private static void waitForSimulationCompletion() throws InterruptedException {
+        for (Thread thread : serviceThreads) {
+            thread.join(); // Wait for each thread to finish
+        }
 
     }
 
@@ -183,37 +187,43 @@ public class GurionRockRunner {
     }
 
     private static void startServices(SystemConfig config) {
-        CountDownLatch latch = new CountDownLatch(config.cameras.size() + config.lidars.size() + 2);
+        latch = new CountDownLatch(config.cameras.size() + config.lidars.size() + 2);
         config.cameras.values().forEach(camera -> {
             CameraService service = new CameraService(camera);
-            new Thread(service).start();
-            latch.countDown();
+            Thread thread = new Thread(service);
+            thread.start();
+            serviceThreads.add(thread);
         });
 
         config.lidars.values().forEach(lidar -> {
-            LiDarService service = new LiDarService(lidar);
-            new Thread(service).start();
-            latch.countDown();
+             LiDarService service = new LiDarService(lidar);
+            Thread thread = new Thread(service);
+            thread.start();
+            serviceThreads.add(thread); // Track the thread
         });
 
         PoseService poseService = new PoseService(config.gpsimu);
-        new Thread(poseService).start();
-        latch.countDown();
+        Thread poseThread = new Thread(poseService);
+        poseThread.start();
+        serviceThreads.add(poseThread);
                 
         FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
-        new Thread(fusionSlamService).start();
-        latch.countDown();
+        Thread fusionThread = new Thread(fusionSlamService);
+        fusionThread.start();
+        serviceThreads.add(fusionThread);
         
         // we will implement countDownLatch in TimeService
         
         TimeService timeService = new TimeService(config.tickTime, config.duration);
         try {
-            latch.await(0, null);
+            latch.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             System.err.println("Latch await interrupted: " + e.getMessage());
         }
-        new Thread(timeService).start();
+        Thread timeThread = new Thread(timeService);
+        timeThread.start();
+        serviceThreads.add(timeThread);
 
 
     }
@@ -266,7 +276,7 @@ private static void writeSuccessOutput(String outputFilePath, StatisticalFolder 
             errorOutput.addProperty("systemRuntime", statistics.getSystemRuntime());
             errorOutput.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
             errorOutput.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
-            errorOutput.addProperty("numErrors", statistics.getNumErrors());
+            errorOutput.addProperty("numLandMarks", statistics.getNumLandMarks());
 
             // Write to file
             try (FileWriter writer = new FileWriter(outputFilePath)) {

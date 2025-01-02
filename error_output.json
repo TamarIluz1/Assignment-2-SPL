@@ -1,1 +1,1 @@
-{"error":"C:\\Users\\tamar\\OneDrive\\Documents\\University\\Semester 3\\????? ??????\\Assignment 2\\example_input\\configuration_file.json (The filename, directory name, or volume label syntax is incorrect)","systemRuntime":0,"numDetectedObjects":0,"numTrackedObjects":0,"numErrors":0}
+{"error":"Cannot invoke \"java.util.concurrent.TimeUnit.toNanos(long)\" because \"unit\" is null","systemRuntime":290,"numDetectedObjects":0,"numTrackedObjects":0,"numErrors":0}

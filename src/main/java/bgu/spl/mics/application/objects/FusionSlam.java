@@ -129,6 +129,9 @@ public class FusionSlam {
             newLandmark.description = newDescription;
             newLandmark.coordinates = newCoordinates;
             landmarks.add(newLandmark);
+            // Increment the number of uniqe landmarks
+            StatisticalFolder.getInstance().incrementLandMarks();
+            
             System.out.println("New landmark added with ID: " + id);
         } else {
             // Update existing landmark

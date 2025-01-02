@@ -71,6 +71,8 @@ public class PoseService extends MicroService {
             }
 
         });
+
+        System.out.println("PoseService initialized successfully.");
         
     }
 }
