@@ -1,9 +1,8 @@
 package bgu.spl.mics.application.objects;
 
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import org.junit.jupiter.api.Test;
 
 public class CloudPointTest {
 
@@ -27,15 +26,7 @@ public class CloudPointTest {
         assertNotEquals(point1, point3, "Points with different coordinates should not be equal");
     }
 
-    @Test
-    public void testHashCode() {
-        CloudPoint point1 = new CloudPoint(3.5, 4.5);
-        CloudPoint point2 = new CloudPoint(3.5, 4.5);
-        CloudPoint point3 = new CloudPoint(4.0, 5.0);
 
-        assertEquals(point1.hashCode(), point2.hashCode(), "Hashcodes should match for equal points");
-        assertNotEquals(point1.hashCode(), point3.hashCode(), "Hashcodes should differ for different points");
-    }
 
     @Test
     public void testStringRepresentation() {

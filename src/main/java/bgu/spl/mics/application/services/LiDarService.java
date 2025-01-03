@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -76,7 +77,7 @@ public class LiDarService extends MicroService {
                     System.out.println("Lidar terminated at tick "+ tickBroadcast.getTick());
                     terminateService();
                 }
-                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsByTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());
+                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsByTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());//TODO  is it the right way to get the new cloud points? Tamar 3.1
                 ArrayList<StampedCloudPoints> processedCloudPoints = new ArrayList<>();
                 for (StampedCloudPoints s : newCloudPoints){
                     ToProcessCloudPoints.add(s);
@@ -88,6 +89,8 @@ public class LiDarService extends MicroService {
                     // if the relevant event is availiable- add the tracked objects
                     if (s.getId().equals("ERROR")){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
+                        GurionRockRunner.setSystemCrashed(true);
+                        GurionRockRunner.setFaultySensor("LiDar" + liDarWorkerTracker.getId());
                         sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
                         terminateService();
                         return;
@@ -112,8 +115,15 @@ public class LiDarService extends MicroService {
                 for (StampedCloudPoints s : processedCloudPoints){
                     ToProcessCloudPoints.remove(s);
                 }
+
                 if (!newlyTracked.isEmpty()){
                     sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
+                }
+
+                if (!newCloudPoints.isEmpty() && !GurionRockRunner.isSystemCrashed() ) {
+                    String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
+                    StampedCloudPoints lastFrame = newCloudPoints.get(newCloudPoints.size() - 1);
+                    GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
                 }
             }
         });
