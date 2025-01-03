@@ -81,7 +81,7 @@ public class FusionSlamService extends MicroService {
         // Subscribe to TrackedObjectsEvent
         subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {
             // Process tracked objects and update landmarks
-            if (currentTime >= trackedObjectsEvent.getTickTime()){ // we have the pose for this tick
+            if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime()){ // we have the pose for this tick
                 handleEvent(trackedObjectsEvent, trackedObjectsEvent.getTickTime());
             }
 
@@ -104,10 +104,13 @@ public class FusionSlamService extends MicroService {
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             System.out.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
+            if (tickBroadcast.getTick() == 13){
+                System.out.println("PROBLEMATIC TICK");
+            }
             currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
-                    if (currentTime >= trackedObjectsEvent.getTickTime() & poseCounter > currentTime){
+                    if (currentTime >= trackedObjectsEvent.getTickTime() & fusionSlam.getPoses().size() >= currentTime){
                         handleEvent(trackedObjectsEvent, trackedObjectsEvent.getTickTime());
                         fusionSlam.removeHandledTrackedObjects(trackedObjectsEvent);
                 }

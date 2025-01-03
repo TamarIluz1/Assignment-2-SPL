@@ -57,6 +57,7 @@ public class PoseService extends MicroService {
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             System.out.println("POSE Received TickBroadcast at tick: " + tickBroadcast.getTick());
+            gpsimu.setCurrentTick(tickBroadcast.getTick());
             if (gpsimu.getStatus() == STATUS.UP){
                 gpsimu.setCurrentTick(tickBroadcast.getTick());
                 // invariant- the pose is updated every tick, when the pose is null, the poses are finished

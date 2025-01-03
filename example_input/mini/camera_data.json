@@ -1,0 +1,11 @@
+{
+    "camera1":[
+        {
+            "time": 2,
+            "detectedObjects": [
+                {"id": "Wall_1", "description": "Wall"}
+            ]
+        }
+        
+    ]
+}
