@@ -184,8 +184,10 @@ public class FusionSlam {
         return unhandledTrackedObjects;
     }
 
-   public void removeHandledTrackedObjects(TrackedObjectsEvent e){
-        unhandledTrackedObjects.remove(e);
+   public void removeHandledTrackedObjects(ArrayList<TrackedObjectsEvent> e){
+    for (TrackedObjectsEvent event : e){
+        unhandledTrackedObjects.remove(event); //suspected issue
+    }
     }
    
 

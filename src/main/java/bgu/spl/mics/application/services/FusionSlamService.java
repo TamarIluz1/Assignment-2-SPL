@@ -107,15 +107,17 @@ public class FusionSlamService extends MicroService {
             if (tickBroadcast.getTick() == 13){
                 System.out.println("PROBLEMATIC TICK");
             }
+            ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
             currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
-                    if (currentTime >= trackedObjectsEvent.getTickTime() & fusionSlam.getPoses().size() >= currentTime){
+                    if ( fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTickTime()){
                         handleEvent(trackedObjectsEvent, trackedObjectsEvent.getTickTime());
-                        fusionSlam.removeHandledTrackedObjects(trackedObjectsEvent);
+                        handled.add(trackedObjectsEvent);
                 }
-                        
             }
+
+            fusionSlam.removeHandledTrackedObjects(handled);
 
         }
 
