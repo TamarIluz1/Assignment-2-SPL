@@ -147,6 +147,7 @@ public abstract class MicroService implements Runnable {
      */
     protected final void terminate() {
         System.out.println(getName() + " is terminating.");
+        
         this.terminated = true;
         
     }

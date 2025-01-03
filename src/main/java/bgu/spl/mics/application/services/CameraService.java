@@ -60,7 +60,7 @@ public class CameraService extends MicroService {
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            System.out.println(camera.getId() + " camera received CrashedBroadcast.");
+            System.out.println(camera.getId() + "CAMERA CRASHBROADCAST camera received CrashedBroadcast.");
             camera.setStatus(STATUS.ERROR);
             terminateService();
         });

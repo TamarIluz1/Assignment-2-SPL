@@ -20,7 +20,8 @@ public class TimeService extends MicroService {
      */
 
     long TickTime,Duration;
-    boolean isTerminated = false;
+    volatile boolean isTerminated = false;
+    private Thread tickThread;
 
     
 
@@ -29,6 +30,15 @@ public class TimeService extends MicroService {
         this.TickTime = TickTime;
         this.Duration = Duration;
     }
+
+    public void terminateTime() {
+        isTerminated = true;
+        if (tickThread != null) {
+            tickThread.interrupt(); // Stop the thread if sleeping
+        }
+        super.terminate();
+    }
+
 
     /**
      * Initializes the TimeService.
@@ -40,18 +50,19 @@ public class TimeService extends MicroService {
         messageBus.register(this);
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
-            terminate();
+            System.out.println("TIME CRASHBROADCAST received, terminating TimeService.");
+            terminateTime();
         });
 
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
             if (terminateBroadcast.getSender().equals("fusionslam")){
                 isTerminated = true;
-                terminate();
+                terminateTime();
             }
         });
 
         // Start a new thread to handle tick broadcasting
-        Thread tickThread = new Thread(() -> {
+        tickThread = new Thread(() -> {
         int currentTick = 1;
         while (currentTick <= Duration && !isTerminated) {
             try {
@@ -60,12 +71,15 @@ public class TimeService extends MicroService {
                 Thread.currentThread().interrupt();
                 break;
             }
+            if (isTerminated) {
+                break;
+            }
             sendBroadcast(new TickBroadcast(currentTick));
             System.out.println("TimeService " + getName() + " sent TickBroadcast with tick " + currentTick);
             currentTick++;
         }
         sendBroadcast(new TerminatedBroadcast("time"));
-        terminate();
+        terminateTime();
         
         
         });

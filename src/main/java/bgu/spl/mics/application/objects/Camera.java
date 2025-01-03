@@ -37,11 +37,15 @@ public class Camera {
     }
 
     public STATUS getStatus() {
-        return status;
+        synchronized(this) {
+            return status;
+        }
     }
 
     public void setStatus(STATUS status) {
-        this.status = status;
+        synchronized(this) {
+            this.status = status;
+        }
     }
 
     public ArrayList<StampedDetectedObjects> getDetectedObjectsList() {

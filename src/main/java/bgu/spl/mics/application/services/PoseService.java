@@ -51,6 +51,7 @@ public class PoseService extends MicroService {
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             // TODO Implement this
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
+            System.out.println("POSE CRASHBROADCAST received, terminating PoseService.");
             gpsimu.setStatus(STATUS.ERROR);
             terminate();
         });
