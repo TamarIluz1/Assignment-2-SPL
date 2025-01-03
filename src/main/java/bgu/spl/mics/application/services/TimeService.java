@@ -55,7 +55,7 @@ public class TimeService extends MicroService {
         int currentTick = 1;
         while (currentTick <= Duration && !isTerminated) {
             try {
-                Thread.sleep(TickTime*70);// added delay Tamar 3.1
+                Thread.sleep(TickTime*1000);// added delay Tamar 3.1
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
