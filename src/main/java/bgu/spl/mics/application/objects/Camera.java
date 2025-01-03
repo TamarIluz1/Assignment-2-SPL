@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.objects;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 ;
 
@@ -66,7 +67,6 @@ public class Camera {
 }
 
 
-// json files will be vector<stampedDetectedObjects>
 
 
 
