@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: bgu.spl.mics.application.objects.CloudPointTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.063 s -- in bgu.spl.mics.application.objects.CloudPointTest

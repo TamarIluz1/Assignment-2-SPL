@@ -56,7 +56,7 @@ public class FusionSlam {
         landmarks.add(landmark);
     }
 
-    public ArrayList<CloudPoint> convertToGlobal(List<CloudPoint> localCoordinates, Pose pose) {
+    public synchronized ArrayList<CloudPoint> convertToGlobal(List<CloudPoint> localCoordinates, Pose pose) {
         ArrayList<CloudPoint> globalCoordinates = new ArrayList<>();
         for (CloudPoint localCP : localCoordinates) {
             globalCoordinates.add(transform(localCP, pose));
@@ -64,7 +64,7 @@ public class FusionSlam {
         return globalCoordinates;
     }
     
-    public CloudPoint transform(CloudPoint localCP, Pose pose) {
+    public synchronized CloudPoint transform(CloudPoint localCP, Pose pose) {
         // Convert yaw angle to radians
         double yawRadians = Math.toRadians(pose.getYaw());
         
@@ -161,7 +161,7 @@ public class FusionSlam {
         }
     }
         
-    public int getNumLandmarks() {
+    public synchronized int getNumLandmarks() {
         return landmarks.size();
     }
 
@@ -171,16 +171,16 @@ public class FusionSlam {
         }
     }
 
-    public void setSensorAmount(int sensorAmount){
+    public synchronized void setSensorAmount(int sensorAmount){
         this.sensorAmount = sensorAmount;
 
     }
 
-    public void addUnhandledTrackedObject(TrackedObjectsEvent e){
+    public synchronized void addUnhandledTrackedObject(TrackedObjectsEvent e){
         unhandledTrackedObjects.add(e);
     }
 
-    public List<TrackedObjectsEvent> getUnhandledTrackedObjects(){
+    public synchronized List<TrackedObjectsEvent> getUnhandledTrackedObjects(){
         return unhandledTrackedObjects;
     }
 
@@ -189,7 +189,7 @@ public class FusionSlam {
     }
    
 
-    public boolean isFinished(){
+    public synchronized boolean isFinished(){
         synchronized(terminatedCounterLock){
             if (terminatedCounter == sensorAmount){
                 return true;

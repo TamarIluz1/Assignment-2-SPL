@@ -1,14 +1,13 @@
 {
   "version": "0.2.0",
   "configurations": [
-    
     {
       "type": "java",
-      "name": "Launch GurionRockRunner",
+      "name": "GurionRockRunner",
       "request": "launch",
       "mainClass": "bgu.spl.mics.application.GurionRockRunner",
       "args": [
-        "C:\\Users\\noamj\\OneDrive\\Desktop\\semester3\\SPL\\a2\\Assignment-2-SPL\\example_input\\configuration_file.json"
+        "C:\\Users\\tamar\\OneDrive\\Documents\\University\\Semester 3\\SPL\\Assignment 2\\example_input\\configuration_file.json"
       ]
     }
   ]

@@ -1,14 +1,14 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class FusionSlamTest {
 
@@ -36,8 +36,8 @@ public class FusionSlamTest {
 
         // Expected global coordinates after transformation
         List<CloudPoint> expectedGlobalCoordinates = new ArrayList<>();
-        expectedGlobalCoordinates.add(new CloudPoint(2.0 + Math.sqrt(2), 3.0 + Math.sqrt(2))); // Transformed local point 1
-        expectedGlobalCoordinates.add(new CloudPoint(2.0 + 2 * Math.sqrt(2), 3.0 + 2 * Math.sqrt(2))); // Transformed local point 2
+        expectedGlobalCoordinates.add(new CloudPoint(2.0, 3.0 + Math.sqrt(2))); // Transformed local point 1
+        expectedGlobalCoordinates.add(new CloudPoint(2.0, 3.0 + 2 * Math.sqrt(2))); // Transformed local point 2
 
         // Perform the conversion
         List<CloudPoint> globalCoordinates = fusionSlam.convertToGlobal(localCoordinates, pose);

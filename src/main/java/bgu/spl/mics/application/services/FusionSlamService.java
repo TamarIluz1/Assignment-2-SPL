@@ -125,7 +125,7 @@ public class FusionSlamService extends MicroService {
         
     }
 
-    public void handleEvent(TrackedObjectsEvent trackedObjectsEvent, int time){
+    public synchronized  void handleEvent(TrackedObjectsEvent trackedObjectsEvent, int time){
         trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
             String id = trackedObject.getId();
             String description = trackedObject.getDescription();

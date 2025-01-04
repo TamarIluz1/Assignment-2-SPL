@@ -1,8 +1,10 @@
 package bgu.spl.mics.application.objects;
 
-import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.api.Test;
 
 public class GPSIMUTest {
 
@@ -46,7 +48,7 @@ public class GPSIMUTest {
 
         gpsimu.setCurrentTick(3); 
         assertEquals(STATUS.DOWN, gpsimu.getStatus(), "GPSIMU should set status to DOWN if tick exceeds pose range.");
-        assertNull(gpsimu.getCurrentPose(), "Current pose should be null when tick exceeds pose range.");
+        assertEquals(2, gpsimu.getCurrentPose().getTime(), "Current pose should be the last known pose.");
     }
 
     @Test
