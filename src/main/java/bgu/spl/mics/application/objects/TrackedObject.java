@@ -35,5 +35,26 @@ public class TrackedObject {
         return description;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("TrackedObject{")
+          .append("id='").append(id).append('\'')
+          .append(", time=").append(time)
+          .append(", description='").append(description).append('\'')
+          .append(", coordinates=[");
+
+        if (coordinates != null && !coordinates.isEmpty()) {
+            for (CloudPoint point : coordinates) {
+                sb.append(point.toString()).append(", ");
+            }
+            sb.delete(sb.length() - 2, sb.length()); // Remove trailing comma and space
+        }
+
+        sb.append("]}");
+        return sb.toString();
+    }
+
+
     
 }

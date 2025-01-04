@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -71,6 +72,9 @@ public class PoseService extends MicroService {
                     PoseEvent event = new PoseEvent(gpsimu.getCurrentPose());
                     sendEvent(event);
                     System.out.println("PoseEvent sent for tick: " + tickBroadcast.getTick());
+                
+                    GurionRockRunner.getPoses().add(gpsimu.getCurrentPose());
+
                 }
 
             }

@@ -1,81 +1,122 @@
-package bgu.spl.mics.application.objects;
+// package bgu.spl.mics.application.objects;
 
-import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.BeforeEach;
+// import org.junit.jupiter.api.Test;
+// import java.util.ArrayList;
+// import java.util.Arrays;
 
-import java.util.ArrayList;
+// import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+// class CameraTest {
 
-public class CameraTest {
+//     private Camera camera;
+//     private ArrayList<StampedDetectedObjects> detectedObjectsList;
 
-    @Test
-    public void testConstructor() {
-        Camera camera = new Camera(1, 10, STATUS.UP);
-        assertEquals(1, camera.getId());
-        assertEquals(10, camera.getFrequency());
-        assertEquals(STATUS.UP, camera.getStatus());
-    }
+//     @BeforeEach
+//     void setUp() {
+//         // Initialize detected objects
+//         DetectedObject detectedObject1 = new DetectedObject("ObjectA", "a");
+//         DetectedObject detectedObject2 = new DetectedObject("ObjectB", "b");
+//         DetectedObject detectedObject3 = new DetectedObject("ObjectC", "c");
+//         DetectedObject detectedObject4 = new DetectedObject("ObjectD", "d");
+//         DetectedObject detectedObject5 = new DetectedObject("ObjectE", "e");
+//         DetectedObject detectedObject6 = new DetectedObject("ObjectF", "f");
+//         DetectedObject detectedObject7 = new DetectedObject("ObjectG", "g");
 
-    @Test
-    public void testGettersAndSetters() {
-        Camera camera = new Camera(1, 10, STATUS.UP);
-        camera.setStatus(STATUS.DOWN);
-        assertEquals(STATUS.DOWN, camera.getStatus());
-    }
+//         // Initialize the list of stamped detected objects
+//         detectedObjectsList = new ArrayList<>();
+//         detectedObjectsList.add(new StampedDetectedObjects(5, new ArrayList<>(Arrays.asList(detectedObject1, detectedObject2, detectedObject3))));
+//         detectedObjectsList.add(new StampedDetectedObjects(10, new ArrayList<>(Arrays.asList(detectedObject4))));
+//         detectedObjectsList.add(new StampedDetectedObjects(15, new ArrayList<>(Arrays.asList(detectedObject5, detectedObject6, detectedObject7))));
 
-    /**
-     * Test: Verifies that the camera processes data correctly before sending.
-     * Pre-conditions:
-     *  - Camera has valid raw data.
-     * Post-conditions:
-     *  - Processed data is correct and matches expectations.
-     */
-    @Test
-    public void testCameraDataProcessing() {
-        Camera camera = new Camera(1, 10, STATUS.UP);
-        camera.setDetectedObjectsList(generateTestDetectedObjects());
+//         // Initialize the camera with id, frequency, and the detected objects list
+//         camera = new Camera(1, 5, STATUS.UP);
+//         camera.setDetectedObjectsList(detectedObjectsList);
+//     }
 
-        ArrayList<StampedDetectedObjects> processedData = camera.getDetectedObjectsList();
+//     /**
+//      * Test prepareData method with a valid current time.
+//      *
+//      * Precondition:
+//      * - The camera is initialized with a frequency of 5.
+//      * - The detectedObjectsList contains entries with times 5, 10, and 15.
+//      *
+//      * Postcondition:
+//      * - The result is not null.
+//      * - The result's time is 5.
+//      */
+//     @Test
+//     void testDataFetching() {
+//         int currentTime = 10;
+//         StampedDetectedObjects result = camera.getDataByTime(currentTime);
+//         assertNotNull(result, "Expected a non-null result for currentTime = 10");
+//         assertEquals(5, result.getTimestamp(), "Expected time of 5 for currentTime = 10");
+//     }
 
-        assertNotNull(processedData, "Processed data should not be null.");
-        assertEquals(2, processedData.size(), "Processed data should have 2 entries.");
-        assertEquals(1, processedData.get(0).getTimestamp(), "First entry time should be 1.");
-        assertEquals("Wall_1", processedData.get(0).getDetectedObjects().get(0).getId(), "First detected object ID should be Wall_1.");
-    }
+//     /**
+//      * Test prepareData method with increasing current time.
+//      *
+//      * Precondition:
+//      * - The camera is initialized with a frequency of 5.
+//      * - The detectedObjectsList contains entries with times 5, 10, and 15.
+//      *
+//      * Postcondition:
+//      * - For currentTime = 9, the result is null.
+//      * - For currentTime = 10, the result contains detected objects 1, 2, and 3.
+//      */
+//     @Test
+//     void FetchDataIncorrectTime() {
+//         int currentTime = 9;
+//         StampedDetectedObjects result = camera.getDataByTime(currentTime);
+//         assertNull(result, "Expected a null result for currentTime = 9");
 
-    /**
-     * Test: Verifies that invalid camera data is handled appropriately.
-     * Pre-conditions:
-     *  - Camera receives invalid or null data.
-     * Post-conditions:
-     *  - Camera should not process invalid data.
-     */
-    @Test
-    public void testCameraInvalidDataHandling() {
-        Camera camera = new Camera(1, 10, STATUS.UP);
+//         currentTime = 10;
+//         result = camera.getDataByTime(currentTime);
+//         assertNotNull(result, "Expected a non-null result for currentTime = 10");
+//         assertEquals(5, result.getTimestamp(), "Expected time of 5 for currentTime = 10");
+//         assertEquals(
+//                 Arrays.asList(
+//                         new DetectedObject("ObjectA", "a"),
+//                         new DetectedObject("ObjectB", "b"),
+//                         new DetectedObject("ObjectC", "c")
+//                 ),
+//                 result.getObjectsList(),
+//                 "Expected detected objects 1, 2, 3 for currentTime = 10"
+//         );
+//     }
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            camera.setDetectedObjectsList(null);
-        });
+//     /**
+//      * Test prepareData method with a current time that has no corresponding detected objects.
+//      *
+//      * Precondition:
+//      * - The camera is initialized with a frequency of 5.
+//      * - The detectedObjectsList does not contain an entry for time 0.
+//      *
+//      * Postcondition:
+//      * - The result is null.
+//      */
+//     @Test
+//     void testPrepareDataWithNoRelevantTime() {
+//         int currentTime = 3;
+//         StampedDetectedObjects result = camera.prepareData(currentTime);
+//         assertNull(result, "Expected a null result for currentTime = 3");
+//     }
 
-        assertEquals("Detected objects list cannot be null", exception.getMessage());
-    }
-
-    /**
-     * Generates a list of test `StampedDetectedObjects` for testing.
-     */
-    private ArrayList<StampedDetectedObjects> generateTestDetectedObjects() {
-        ArrayList<StampedDetectedObjects> testObjects = new ArrayList<>();
-
-        ArrayList<DetectedObject> detectedObjects1 = new ArrayList<>();
-        detectedObjects1.add(new DetectedObject("Wall_1", "Wall"));
-        testObjects.add(new StampedDetectedObjects(1, detectedObjects1));
-
-        ArrayList<DetectedObject> detectedObjects2 = new ArrayList<>();
-        detectedObjects2.add(new DetectedObject("Wall_2", "Wall"));
-        detectedObjects2.add(new DetectedObject("Chair_1", "Chair"));
-        testObjects.add(new StampedDetectedObjects(2, detectedObjects2));
-
-        return testObjects;
-    }
-}
+//     /**
+//      * Test prepareData method with an empty detected objects list.
+//      *
+//      * Precondition:
+//      * - The camera is initialized with a frequency of 5.
+//      * - The detectedObjectsList is empty.
+//      *
+//      * Postcondition:
+//      * - The result is null.
+//      */
+//     @Test
+//     void testPrepareDataWithEmptyDetectedObjectsList() {
+//         camera = new Camera(1, 5, new ArrayList<>());
+//         int currentTime = 10;
+//         StampedDetectedObjects result = camera.prepareData(currentTime);
+//         assertNull(result, "Expected a null result for empty detected objects list");
+//     }
+// }

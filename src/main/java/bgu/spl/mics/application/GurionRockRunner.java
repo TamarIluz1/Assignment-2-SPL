@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -23,119 +24,127 @@ import bgu.spl.mics.application.configuration.Configuration;
 import bgu.spl.mics.application.configuration.LidarConfiguration;
 import bgu.spl.mics.application.objects.Camera;
 import bgu.spl.mics.application.objects.CloudPoint;
+import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.FusionSlam;
 import bgu.spl.mics.application.objects.GPSIMU;
 import bgu.spl.mics.application.objects.LandMark;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.Pose;
 import bgu.spl.mics.application.objects.STATUS;
+import bgu.spl.mics.application.objects.StampedCloudPoints;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
 import bgu.spl.mics.application.services.CameraService;
 import bgu.spl.mics.application.services.FusionSlamService;
- import bgu.spl.mics.application.services.LiDarService;
- import bgu.spl.mics.application.services.PoseService;
- import bgu.spl.mics.application.services.TimeService;
+import bgu.spl.mics.application.services.LiDarService;
+import bgu.spl.mics.application.services.PoseService;
+import bgu.spl.mics.application.services.TimeService;
 
 /**
  * The main entry point for the GurionRock Pro Max Ultra Over 9000 simulation.
- * <p>
- * This class initializes the system and starts the simulation by setting up
- * services, objects, and configurations.
- * </p>
  */
 public class GurionRockRunner {
 
-    /**
-     * The main method of the simulation.
-     * This method sets up the necessary components, parses configuration files,
-     * initializes services, and starts the simulation.
-     *
-     * @param args Command-line arguments. The first argument is expected to be the path to the configuration file.
-     */
-
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final StatisticalFolder statistics = StatisticalFolder.getInstance();
-    private static final  FusionSlam fusionSlam = FusionSlam.getInstance();
+    private static final FusionSlam fusionSlam = FusionSlam.getInstance();
     static CountDownLatch latch;
 
-    private static final List<Thread> serviceThreads = new ArrayList<>();
+    private static volatile boolean systemCrashed = false;
+    private static String faultySensor = null;
 
+    // For camera frames
+    private static final Map<String, StampedDetectedObjects> lastCamerasFrame = new HashMap<>();
+
+    // For LiDar frames
+    private static final Map<String, StampedCloudPoints> lastLiDarWorkerTrackersFrame = new HashMap<>();
+
+    // For final poses
+    private static final List<Pose> poses = new ArrayList<>();
+
+    private static final List<Thread> serviceThreads = new ArrayList<>();
 
     private static String cameraDataPath;
     private static String lidarDataPath;
     private static String poseDataPath;
-    
-    public static CountDownLatch getLatch() {
-        return latch;
-    }
 
-     public static void main(String[] args) {
+    // Setters used by services on crashes
+    public static void setSystemCrashed(boolean crashed) { systemCrashed = crashed; }
+    public static void setFaultySensor(String sensorName) { faultySensor = sensorName; }
+
+    public static Map<String, StampedDetectedObjects> getLastCamerasFrame() { return lastCamerasFrame; }
+    public static Map<String, StampedCloudPoints> getLastLiDarWorkerTrackersFrame() { return lastLiDarWorkerTrackersFrame; }
+    public static List<Pose> getPoses() { return poses; }
+    public static CountDownLatch getLatch() { return latch; }
+    public static boolean isSystemCrashed() { return systemCrashed; }
+
+    public static void main(String[] args) {
         System.out.println("Starting Simulation...");
-
         if (args.length < 1) {
-            System.out.println("Configuration file path must be provided as the first command-line argument.");
+            System.out.println("Configuration file path must be provided as the first arg.");
             System.exit(1);
         }
         String configFilePath = args[0];
 
         try {
-            // Parse configuration
+            // 1) Parse config
             Configuration config = parseConfiguration(configFilePath);
 
-
-            // Resolve paths for data files
+            // 2) Resolve paths
             cameraDataPath = getAbsolutePath(configFilePath, config.getCameras().getCameraDatasPath());
-            lidarDataPath = getAbsolutePath(configFilePath, config.getLiDarWorkers().getLidarsDataPath());
-            poseDataPath = getAbsolutePath(configFilePath, config.getPoseJsonFile());
+            lidarDataPath  = getAbsolutePath(configFilePath, config.getLiDarWorkers().getLidarsDataPath());
+            poseDataPath   = getAbsolutePath(configFilePath, config.getPoseJsonFile());
 
-            // Parse sensor data
+            // 3) Parse sensor data
             Map<String, ArrayList<StampedDetectedObjects>> cameraData = parseCameraData(cameraDataPath);
             ArrayList<Pose> poseData = parsePoseData(poseDataPath);
 
-            // Initialize system configuration
+            // 4) Build system config
             SystemConfig systemConfig = initializeSystem(config, cameraData, poseData);
-            
-            // Start services
+
+            // 5) Start services
             startServices(systemConfig);
 
-            // Wait for simulation to finish
+            // 6) Wait for simulation to end
             waitForSimulationCompletion();
 
-
-            // Assuming fusionSlam.getLandmarks() returns List<LandMark>
-            ArrayList<LandMark> landMarkList = fusionSlam.getLandmarks();
-            Map<String, LandMark> landMarkMap = landMarkList.stream()
-                .collect(Collectors.toMap(LandMark::getId, landMark -> landMark));
-
-            writeSuccessOutput("output_file.json", statistics, landMarkMap);
-        } catch (Exception e) {
-
-            // Write error output
-            writeErrorOutput("error_output.json", e.getMessage(), statistics);
+            // 7) If crashed => error, else success
+            if (systemCrashed) {
+                writeErrorOutput(
+                    "error_output.json",
+                    "Camera disconnected", // or "LiDar disconnected" etc.
+                    (faultySensor != null ? faultySensor : "UnknownSensor"),
+                    lastCamerasFrame,
+                    lastLiDarWorkerTrackersFrame,
+                    poses,
+                    statistics
+                );
+            } else {
+                ArrayList<LandMark> landMarkList = fusionSlam.getLandmarks();
+                Map<String, LandMark> landMarkMap = landMarkList.stream()
+                    .collect(Collectors.toMap(LandMark::getId, lm -> lm));
+                writeSuccessOutput("output_file.json", statistics, landMarkMap);
+            }
+        }
+        catch (Exception e) {
+            // If main fails, produce an error
+            writeErrorOutput(
+                "error_output.json",
+                "Exception in main: " + e.getMessage(),
+                (faultySensor != null ? faultySensor : "UnknownSensor"),
+                lastCamerasFrame,
+                lastLiDarWorkerTrackersFrame,
+                poses,
+                statistics
+            );
         }
     }
 
-    private static void waitForSimulationCompletion() throws InterruptedException {
-        for (Thread thread : serviceThreads) {
-            thread.join(); // Wait for each thread to finish
-        }
-
-    }
-
-    private static String getAbsolutePath(String configFilePath, String relativePath) {
-        Path configPath = Paths.get(configFilePath);
-        Path resolvedPath = configPath.getParent().resolve(relativePath).normalize();
-        return resolvedPath.toString();
-    }
-
+    // --- Parsing & building
     private static Configuration parseConfiguration(String filePath) throws IOException {
         try (FileReader reader = new FileReader(filePath)) {
-            return gson.fromJson(reader, Configuration.class);
-        }
-        catch (IOException e) {
-            System.err.println("Failed to parse configuration file: " + e.getMessage());
-            throw e;
+            Type type = new TypeToken<Configuration>() {}.getType();
+            return gson.fromJson(reader, type);
         }
     }
 
@@ -146,8 +155,6 @@ public class GurionRockRunner {
         }
     }
 
-
-
     private static ArrayList<Pose> parsePoseData(String filePath) throws IOException {
         Type type = new TypeToken<ArrayList<Pose>>() {}.getType();
         try (FileReader reader = new FileReader(filePath)) {
@@ -155,32 +162,42 @@ public class GurionRockRunner {
         }
     }
 
-    private static SystemConfig initializeSystem(Configuration config,
-                                                Map<String, ArrayList<StampedDetectedObjects>> cameraData,
-                                                ArrayList<Pose> poseData) {
+    private static void waitForSimulationCompletion() throws InterruptedException {
+        for (Thread t : serviceThreads) {
+            t.join();
+        }
+    }
+
+    private static String getAbsolutePath(String configFilePath, String relativePath) {
+        Path configPath = Paths.get(configFilePath);
+        Path resolvedPath = configPath.getParent().resolve(relativePath).normalize();
+        return resolvedPath.toString();
+    }
+
+    private static SystemConfig initializeSystem(
+        Configuration config,
+        Map<String, ArrayList<StampedDetectedObjects>> cameraData,
+        ArrayList<Pose> poseData
+    ) {
         Map<Integer, Camera> cameras = new HashMap<>();
         for (CameraConfiguration camConfig : config.getCameras().getCamerasConfigurations()) {
-            Camera camera = new Camera(camConfig.getId(), camConfig.getFrequency(),STATUS.UP);
+            Camera camera = new Camera(camConfig.getId(), camConfig.getFrequency(), STATUS.UP);
             if (cameraData.containsKey(camConfig.getCamera_key())) {
                 camera.setDetectedObjectsList(cameraData.get(camConfig.getCamera_key()));
             }
             cameras.put(camConfig.getId(), camera);
         }
 
-
-
         Map<Integer, LiDarWorkerTracker> lidars = new HashMap<>();
         for (LidarConfiguration lidConfig : config.getLiDarWorkers().getLidarConfigurations()) {
-            LiDarWorkerTracker lidar = new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency(), lidarDataPath);
-            lidars.put(lidConfig.getId(), lidar);
+            LiDarWorkerTracker tracker =
+                new LiDarWorkerTracker(lidConfig.getId(), lidConfig.getFrequency(), lidarDataPath);
+            lidars.put(lidConfig.getId(), tracker);
         }
 
         GPSIMU gpsimu = new GPSIMU(poseData);
 
-        // Calculate the total number of sensors
         int totalSensors = cameras.size() + lidars.size() + 1;
-
-        // Update FusionSlam with the total number of sensors
         fusionSlam.setSensorAmount(totalSensors);
 
         return new SystemConfig(cameras, lidars, gpsimu, config.getTickTime(), config.getDuration());
@@ -188,7 +205,8 @@ public class GurionRockRunner {
 
     private static void startServices(SystemConfig config) {
         latch = new CountDownLatch(config.cameras.size() + config.lidars.size() + 2);
-    
+
+        // Pose
         System.out.println("Initializing PoseService...");
         PoseService poseService = new PoseService(config.gpsimu);
         Thread poseThread = new Thread(() -> {
@@ -196,11 +214,14 @@ public class GurionRockRunner {
                 poseService.run();
             } catch (Exception e) {
                 System.err.println("PoseService failed: " + e.getMessage());
+                setSystemCrashed(true);
+                setFaultySensor("PoseService");
             }
         });
         poseThread.start();
         serviceThreads.add(poseThread);
-    
+
+        // FusionSlam
         System.out.println("Initializing FusionSlamService...");
         FusionSlamService fusionSlamService = new FusionSlamService(FusionSlam.getInstance());
         Thread fusionThread = new Thread(() -> {
@@ -208,27 +229,48 @@ public class GurionRockRunner {
                 fusionSlamService.run();
             } catch (Exception e) {
                 System.err.println("FusionSlamService failed: " + e.getMessage());
+                setSystemCrashed(true);
+                setFaultySensor("FusionSlamService");
             }
         });
         fusionThread.start();
         serviceThreads.add(fusionThread);
-    
+
+        // Cameras
         System.out.println("Initializing CameraServices...");
-        config.cameras.values().forEach(camera -> {
-            CameraService service = new CameraService(camera);
-            Thread thread = new Thread(service);
-            thread.start();
-            serviceThreads.add(thread);
-        });
-    
+        for (Camera cam : config.cameras.values()) {
+            CameraService service = new CameraService(cam);
+            Thread t = new Thread(() -> {
+                try {
+                    service.run();
+                } catch (Exception e) {
+                    System.err.println("CameraService failed: " + e.getMessage());
+                    setSystemCrashed(true);
+                    setFaultySensor("Camera" + cam.getId());
+                }
+            });
+            t.start();
+            serviceThreads.add(t);
+        }
+
+        // LiDar
         System.out.println("Initializing LiDarServices...");
-        config.lidars.values().forEach(lidar -> {
-            LiDarService service = new LiDarService(lidar);
-            Thread thread = new Thread(service);
-            thread.start();
-            serviceThreads.add(thread);
-        });
-    
+        for (LiDarWorkerTracker lw : config.lidars.values()) {
+            LiDarService service = new LiDarService(lw);
+            Thread t = new Thread(() -> {
+                try {
+                    service.run();
+                } catch (Exception e) {
+                    System.err.println("LiDarService failed: " + e.getMessage());
+                    setSystemCrashed(true);
+                    setFaultySensor("LiDar" + lw.getId());
+                }
+            });
+            t.start();
+            serviceThreads.add(t);
+        }
+
+        // Time
         System.out.println("Waiting for all services to initialize...");
         TimeService timeService = new TimeService(config.tickTime, config.duration);
         Thread timeThread = new Thread(() -> {
@@ -239,84 +281,198 @@ public class GurionRockRunner {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.err.println("Latch awaiting interrupted: " + e.getMessage());
+                setSystemCrashed(true);
+                setFaultySensor("TimeService");
             }
         });
         timeThread.start();
         serviceThreads.add(timeThread);
     }
-    
 
-
-    
-private static void writeSuccessOutput(String outputFilePath, StatisticalFolder statistics, Map<String, LandMark> landMarks) {
-    try {
-        JsonObject successOutput = new JsonObject();
-        successOutput.addProperty("systemRuntime", statistics.getSystemRuntime());
-        successOutput.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
-        successOutput.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
-        successOutput.addProperty("numLandmarks", landMarks.size());
-
-        // Add landmarks to JSON
-        JsonObject landMarksJson = new JsonObject();
-        for (Map.Entry<String, LandMark> entry : landMarks.entrySet()) {
-            JsonObject landmarkJson = new JsonObject();
-            landmarkJson.addProperty("id", entry.getValue().getId());
-            landmarkJson.addProperty("description", entry.getValue().getDescription());
-
-            JsonArray coordinatesArray = new JsonArray();
-            for (CloudPoint coordinate : entry.getValue().getCoordinates()) {
-                JsonObject coordinateJson = new JsonObject();
-                coordinateJson.addProperty("x", coordinate.getX());
-                coordinateJson.addProperty("y", coordinate.getY());
-                coordinatesArray.add(coordinateJson);
-            }
-            landmarkJson.add("coordinates", coordinatesArray);
-            landMarksJson.add(entry.getKey(), landmarkJson);
-        }
-        successOutput.add("landMarks", landMarksJson);
-
-        // Write to file
-        try (FileWriter writer = new FileWriter(outputFilePath)) {
-            gson.toJson(successOutput, writer);
-        }
-        System.out.println("Success output written to " + outputFilePath);
-    } catch (IOException e) {
-        System.err.println("Failed to write success output: " + e.getMessage());
-    }
-}
-
-
-    private static void writeErrorOutput(String outputFilePath, String errorMessage, StatisticalFolder statistics) {
+    private static void writeErrorOutput(
+        String outputFilePath,
+        String errorMessage,
+        String faultySensor,
+        Map<String, StampedDetectedObjects> lastCamerasFrame,
+        Map<String, StampedCloudPoints> lastLiDarWorkerTrackersFrame,
+        List<Pose> poses,
+        StatisticalFolder statistics
+    ) {
         try {
-            JsonObject errorOutput = new JsonObject();
-            errorOutput.addProperty("error", errorMessage);
-            errorOutput.addProperty("systemRuntime", statistics.getSystemRuntime());
-            errorOutput.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
-            errorOutput.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
-            errorOutput.addProperty("numLandMarks", statistics.getNumLandMarks());
+            
+            // Decide the final error message based on faultySensor's first letter
+            String finalErrorMessage;
+            if (faultySensor.startsWith("C")) {
+                finalErrorMessage = "Camera disconnected";
+            } else if (faultySensor.startsWith("L")) {
+                finalErrorMessage = "LiDar disconnected";
+            } else {
+                finalErrorMessage = errorMessage; 
+                // Fallback: use the given errorMessage if it's neither "C" nor "L"
+            }
 
-            // Write to file
+
+            JsonObject errorOutput = new JsonObject();
+
+            errorOutput.addProperty("error", errorMessage);
+            errorOutput.addProperty("faultySensor", faultySensor);
+
+            // lastCamerasFrame
+            JsonObject camerasFrameJson = new JsonObject();
+            for (Map.Entry<String, StampedDetectedObjects> entry : lastCamerasFrame.entrySet()) {
+                String cameraName = entry.getKey();
+                StampedDetectedObjects stamped = entry.getValue();
+
+                JsonObject stampedJson = new JsonObject();
+                stampedJson.addProperty("time", stamped.getTimestamp());
+
+                JsonArray detectedArr = new JsonArray();
+                for (DetectedObject obj : stamped.getDetectedObjects()) {
+                    JsonObject objJson = new JsonObject();
+                    objJson.addProperty("id", obj.getId());
+                    objJson.addProperty("description", obj.getDescripition());
+                    detectedArr.add(objJson);
+                }
+                stampedJson.add("detectedObjects", detectedArr);
+
+                camerasFrameJson.add(cameraName, stampedJson);
+            }
+            errorOutput.add("lastCamerasFrame", camerasFrameJson);
+
+            // lastLiDarWorkerTrackersFrame
+            JsonObject lidarFrameJson = new JsonObject();
+            for (Map.Entry<String, StampedCloudPoints> entry : lastLiDarWorkerTrackersFrame.entrySet()) {
+                String lidarName = entry.getKey();
+                StampedCloudPoints scpList = entry.getValue();
+
+                JsonArray scpArray = new JsonArray();
+
+                JsonObject scpJson = new JsonObject();
+                scpJson.addProperty("id", scpList.getId());
+                scpJson.addProperty("time", scpList.getTime());
+                // description if you have it
+
+                JsonArray coordsArr = new JsonArray();
+                for (CloudPoint cp : scpList.getCloudPoints()) {
+                    JsonObject cpObj = new JsonObject();
+                    cpObj.addProperty("x", cp.getX());
+                    cpObj.addProperty("y", cp.getY());
+                    coordsArr.add(cpObj);
+                }
+                scpJson.add("coordinates", coordsArr);
+
+                scpArray.add(scpJson);
+                
+                lidarFrameJson.add(lidarName, scpArray);
+            }
+            errorOutput.add("lastLiDarWorkerTrackersFrame", lidarFrameJson);
+
+            // poses
+            JsonArray posesArr = new JsonArray();
+            for (Pose p : poses) {
+                JsonObject poseJson = new JsonObject();
+                poseJson.addProperty("time", p.getTime());
+                poseJson.addProperty("x", p.getX());
+                poseJson.addProperty("y", p.getY());
+                poseJson.addProperty("yaw", p.getYaw());
+                posesArr.add(poseJson);
+            }
+            errorOutput.add("poses", posesArr);
+
+            // statistics
+            JsonObject statsJson = new JsonObject();
+            statsJson.addProperty("systemRuntime", statistics.getSystemRuntime());
+            statsJson.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+            statsJson.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+            statsJson.addProperty("numLandmarks", statistics.getNumLandMarks());
+
+            // landMarks
+            JsonObject landMarksJson = new JsonObject();
+            for (LandMark lm : fusionSlam.getLandmarks()) {
+                JsonObject lmJson = new JsonObject();
+                lmJson.addProperty("id", lm.getId());
+                lmJson.addProperty("description", lm.getDescription());
+
+                JsonArray coordsArr = new JsonArray();
+                for (CloudPoint cp : lm.getCoordinates()) {
+                    JsonObject cpObj = new JsonObject();
+                    cpObj.addProperty("x", cp.getX());
+                    cpObj.addProperty("y", cp.getY());
+                    coordsArr.add(cpObj);
+                }
+                lmJson.add("coordinates", coordsArr);
+
+                landMarksJson.add(lm.getId(), lmJson);
+            }
+            statsJson.add("landMarks", landMarksJson);
+
+            errorOutput.add("statistics", statsJson);
+
             try (FileWriter writer = new FileWriter(outputFilePath)) {
                 gson.toJson(errorOutput, writer);
             }
-            System.out.println("Error output written to " + outputFilePath);
+            System.out.println("Detailed crash error output written to " + outputFilePath);
+
         } catch (IOException e) {
             System.err.println("Failed to write error output: " + e.getMessage());
         }
     }
 
-    public static class SystemConfig {
-        Map<Integer, Camera> cameras;
-        Map<Integer, LiDarWorkerTracker> lidars;
-        GPSIMU gpsimu;
-        long tickTime;
-        long duration;
+    private static void writeSuccessOutput(
+        String outputFilePath,
+        StatisticalFolder statistics,
+        Map<String, LandMark> landMarks
+    ) {
+        try {
+            JsonObject successOutput = new JsonObject();
+            successOutput.addProperty("systemRuntime", statistics.getSystemRuntime());
+            successOutput.addProperty("numDetectedObjects", statistics.getNumDetectedObjects());
+            successOutput.addProperty("numTrackedObjects", statistics.getNumTrackedObjects());
+            successOutput.addProperty("numLandmarks", landMarks.size());
 
-        public SystemConfig(Map<Integer, Camera> cameras,
-                            Map<Integer, LiDarWorkerTracker> lidars,
-                            GPSIMU gpsimu,
-                            long tickTime,
-                            long duration) {
+            JsonObject landMarksJson = new JsonObject();
+            for (Map.Entry<String, LandMark> entry : landMarks.entrySet()) {
+                LandMark lm = entry.getValue();
+                JsonObject lmJson = new JsonObject();
+                lmJson.addProperty("id", lm.getId());
+                lmJson.addProperty("description", lm.getDescription());
+
+                JsonArray coordsArr = new JsonArray();
+                for (CloudPoint cp : lm.getCoordinates()) {
+                    JsonObject cpObj = new JsonObject();
+                    cpObj.addProperty("x", cp.getX());
+                    cpObj.addProperty("y", cp.getY());
+                    coordsArr.add(cpObj);
+                }
+                lmJson.add("coordinates", coordsArr);
+                landMarksJson.add(entry.getKey(), lmJson);
+            }
+            successOutput.add("landMarks", landMarksJson);
+
+            try (FileWriter writer = new FileWriter(outputFilePath)) {
+                gson.toJson(successOutput, writer);
+            }
+            System.out.println("Success output written to " + outputFilePath);
+
+        } catch (IOException e) {
+            System.err.println("Failed to write success output: " + e.getMessage());
+        }
+    }
+
+    public static class SystemConfig {
+        public Map<Integer, Camera> cameras;
+        public Map<Integer, LiDarWorkerTracker> lidars;
+        public GPSIMU gpsimu;
+        public long tickTime;
+        public long duration;
+
+        public SystemConfig(
+            Map<Integer, Camera> cameras,
+            Map<Integer, LiDarWorkerTracker> lidars,
+            GPSIMU gpsimu,
+            long tickTime,
+            long duration
+        ) {
             this.cameras = cameras;
             this.lidars = lidars;
             this.gpsimu = gpsimu;
@@ -325,5 +481,3 @@ private static void writeSuccessOutput(String outputFilePath, StatisticalFolder 
         }
     }
 }
-
-

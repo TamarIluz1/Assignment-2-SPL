@@ -26,4 +26,14 @@ public class DetectObjectsEvent implements Event<Boolean> {
     }
 
 
+    @Override
+    public String toString(){
+         return "DetectObjectsEvent{" +
+                "tickTime=" + tickTime +
+                ", objectDetails=" + (objectDetails != null ? objectDetails.toString() : "null") +
+                '}';
+
+    }
+
+
 }

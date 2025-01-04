@@ -43,6 +43,15 @@ public class GPSIMU {
         this.status = status;
     }
 
+     @Override
+    public String toString() {
+        return "GPSIMU{" +
+               "currentTick=" + currentTick +
+               ", status=" + status +
+               ", currentPose=" + getCurrentPose() +
+               '}';
+    }
+
 
 
 }

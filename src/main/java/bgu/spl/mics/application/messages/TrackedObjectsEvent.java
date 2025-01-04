@@ -25,6 +25,16 @@ public class TrackedObjectsEvent implements Event<Boolean>{
         return tickTime;
     }
 
+    @Override
+    public String toString() {
+        return "TrackedObjectsEvent{" +
+                "trackedObjects=" + (trackedObjects != null ? trackedObjects.toString() : "null") +
+                ", tickTime=" + tickTime +
+                '}';
+    }
+
+
+
 
 
 }

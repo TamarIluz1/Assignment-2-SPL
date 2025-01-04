@@ -23,4 +23,12 @@ public class CloudPoint {
         return y;
     }
 
+    @Override
+    public String toString() {
+        return "CloudPoint{" +
+               "x=" + x +
+               ", y=" + y +
+               '}';
+    }
+
 }

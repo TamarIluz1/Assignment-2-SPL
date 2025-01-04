@@ -104,9 +104,6 @@ public class FusionSlamService extends MicroService {
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             System.out.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
-            if (tickBroadcast.getTick() == 13){
-                System.out.println("PROBLEMATIC TICK");
-            }
             ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
             currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
@@ -133,11 +130,18 @@ public class FusionSlamService extends MicroService {
             String id = trackedObject.getId();
             String description = trackedObject.getDescription();
             ArrayList<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
+            if (id.equals("Wall_1")){
+                System.out.println("Wall_1");
+                //sendBroadcast(new CrashedBroadcast(id, description));
+            }
             // to transform the coordinates to the global map
 
             fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates, fusionSlam.getPoseByTime(time) ) );
         });
         complete(trackedObjectsEvent, true); // Acknowledge processing is done
     }
+
+
+    
 }
 

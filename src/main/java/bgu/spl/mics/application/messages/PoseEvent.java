@@ -16,6 +16,13 @@ public class PoseEvent implements Event<Pose>{
         return pose;
     }
 
+    @Override
+    public String toString(){
+        return "PoseEvent{" +
+                "pose=" + (pose != null ? pose.toString() : "null") +
+                '}';
+    }
+
 
 
 
