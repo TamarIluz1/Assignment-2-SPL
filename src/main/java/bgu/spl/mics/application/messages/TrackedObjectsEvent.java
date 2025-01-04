@@ -21,7 +21,7 @@ public class TrackedObjectsEvent implements Event<Boolean>{
         return trackedObjects;
     }
 
-    public int getTickTime() {
+    public int getTime() {
         return tickTime;
     }
 

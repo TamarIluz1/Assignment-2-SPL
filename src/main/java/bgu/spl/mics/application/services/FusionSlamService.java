@@ -81,7 +81,7 @@ public class FusionSlamService extends MicroService {
         subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {
             // Process tracked objects and update landmarks
 
-            if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime() & currentTime >= trackedObjectsEvent.getTickTime()){ // we have the pose for this tick
+            if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & currentTime >= trackedObjectsEvent.getTime()){ // we have the pose for this tick
                 handleEvent(trackedObjectsEvent);
             }
 
@@ -104,7 +104,7 @@ public class FusionSlamService extends MicroService {
                     // we might be able to handle the event now
                     ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
                     for (TrackedObjectsEvent e : fusionSlam.getUnhandledTrackedObjects()){
-                        if (e.getTickTime() <= currentTime & fusionSlam.getPoses().size() >= e.getTickTime()){
+                        if (e.getTime() <= currentTime & fusionSlam.getPoses().size() >= e.getTime()){
                             handleEvent(e);
                             handled.add(e);
                         }
@@ -120,7 +120,7 @@ public class FusionSlamService extends MicroService {
             currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
-                    if ( fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTickTime()){
+                    if ( fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTime()){
                         handleEvent(trackedObjectsEvent);
                         handled.add(trackedObjectsEvent);
                 }
@@ -138,20 +138,21 @@ public class FusionSlamService extends MicroService {
     }
 
     public void handleEvent(TrackedObjectsEvent trackedObjectsEvent){
+
         trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
             String id = trackedObject.getId();
-            if (id.equals("Door")){
-                System.err.println("DOOR");
+            if (id.equals("Circular_Base_1")){
+                System.err.println("Circular_Base_1");
             }
             String description = trackedObject.getDescription();
             ArrayList<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
-            if (id.equals("Door")){
-                System.err.println("Door");
+            if (id.equals("Circular_Base_1")){
+                System.err.println("Circular_Base_1");
                 //sendBroadcast(new CrashedBroadcast(id, description));
             }
             // to transform the coordinates to the global map
 
-            fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates,fusionSlam.getPoseByTime(trackedObjectsEvent.getTickTime())));
+            fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates,fusionSlam.getPoseByTime(trackedObject.getTime())));
         });
         complete(trackedObjectsEvent, true); // Acknowledge processing is done
     }

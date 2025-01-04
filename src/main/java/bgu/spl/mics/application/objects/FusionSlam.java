@@ -228,7 +228,7 @@ public class FusionSlam {
      * @param trackedObjectsEvent The event containing tracked objects to be processed.
      */
     public synchronized void processTrackedObjectsToLandmarks(TrackedObjectsEvent trackedObjectsEvent) {
-        int time = trackedObjectsEvent.getTickTime();
+        int time = trackedObjectsEvent.getTime();
         Pose pose = getPoseByTime(time);
 
         if (pose == null) {
