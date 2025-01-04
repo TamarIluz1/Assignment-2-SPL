@@ -3,7 +3,7 @@
         {
             "time": 2,
             "detectedObjects": [
-                {"id": "Wall_1", "description": "Wall"}
+                {"id": "Door", "description": "Door"}
             ]
         }
         

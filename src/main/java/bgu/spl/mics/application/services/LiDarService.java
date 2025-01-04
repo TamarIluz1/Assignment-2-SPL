@@ -99,6 +99,9 @@ public class LiDarService extends MicroService {
                         for (DetectedObject d : e.getObjectDetails().getDetectedObjects()){
                             
                             if (d.getId().equals(s.getId())){
+                                if (d.getId().equals("Door")){
+                                    System.out.println("Door detected at tick " + tickBroadcast.getTick());
+                                }
                                 // we can create the object
                                 handled.add(e);
                                 processedCloudPoints.add(s);
