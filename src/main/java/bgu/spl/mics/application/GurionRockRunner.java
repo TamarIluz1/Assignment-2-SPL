@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -44,7 +45,7 @@ import bgu.spl.mics.application.services.TimeService;
  */
 public class GurionRockRunner {
 
-    private static final Gson gson = new Gson();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final StatisticalFolder statistics = StatisticalFolder.getInstance();
     private static final FusionSlam fusionSlam = FusionSlam.getInstance();
     static CountDownLatch latch;

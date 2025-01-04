@@ -1,18 +1,19 @@
 package bgu.spl.mics.application.objects;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import bgu.spl.mics.application.messages.TrackedObjectsEvent;
 public class FusionSlam {
    
-    ArrayList<LandMark> landmarks;// changed from [] array to List bt tamar 31/12
+    CopyOnWriteArrayList<LandMark> landmarks;// changed from [] array to List bt tamar 31/12
     ArrayList<Pose> poses;
     int terminatedCounter; 
     Object terminatedCounterLock= new Object();
     ArrayList<TrackedObjectsEvent> unhandledTrackedObjects;
     int sensorAmount; 
     private FusionSlam() {
-        this.landmarks = new ArrayList<>();
+        this.landmarks = new CopyOnWriteArrayList<>();
         this.poses = new ArrayList<>();
         unhandledTrackedObjects = new ArrayList<>();
         terminatedCounter = 0;
@@ -107,57 +108,56 @@ public class FusionSlam {
         return null;
     }
 
-    public void addOrUpdateLandmark(String id, String newDescription, ArrayList <CloudPoint> newCoordinates) {
+    public synchronized void addOrUpdateLandmark(String id, String newDescription, ArrayList <CloudPoint> newCoordinates) {
         // Search for existing landmark by ID
-        LandMark existingLandmark = null;
-        for (LandMark landmark : landmarks) {
-            if (landmark.id.equals(id)) {
-                existingLandmark = landmark;
-                break;
+        synchronized (landmarks) {
+            LandMark existingLandmark = null;
+            for (LandMark landmark : landmarks) {
+                if (landmark.id.equals(id)) {
+                    existingLandmark = landmark;
+                    break;
+                }
             }
-        }
-    
-        if (existingLandmark == null) {
-            // Add new landmark
-            LandMark newLandmark = new LandMark(id, newDescription, newCoordinates);
-            newLandmark.id = id;
-            newLandmark.description = newDescription;
-            newLandmark.coordinates = newCoordinates;
-            landmarks.add(newLandmark);
-            // Increment the number of uniqe landmarks
-            StatisticalFolder.getInstance().incrementLandMarks();
-            
-            System.out.println("New landmark added with ID: " + id);
-        } else {
-            // Update existing landmark
-            ArrayList<CloudPoint> refinedCoordinates = new ArrayList<>();
-            int existingSize = existingLandmark.coordinates.size();
-            int newSize = newCoordinates.size();
-    
-            // Average coordinates
-            for (int i = 0; i < Math.min(existingSize, newSize); i++) {
-                CloudPoint existingCP = existingLandmark.coordinates.get(i);
-                CloudPoint newCP = newCoordinates.get(i);
-    
-                double avgX = (existingCP.getX() + newCP.getX()) / 2;
-                double avgY = (existingCP.getY() + newCP.getY()) / 2;
-    
-                refinedCoordinates.add(new CloudPoint(avgX, avgY));
+        
+            if (existingLandmark == null) {
+                // Add new landmark
+                LandMark newLandmark = new LandMark(id, newDescription, newCoordinates);
+                newLandmark.id = id;
+                newLandmark.description = newDescription;
+                newLandmark.coordinates = newCoordinates;
+                landmarks.add(newLandmark);
+                // Increment the number of uniqe landmarks
+                StatisticalFolder.getInstance().incrementLandMarks();
+                
+                System.out.println("New landmark added with ID: " + id);
+            } else {
+                // Update existing landmark
+                ArrayList<CloudPoint> refinedCoordinates = new ArrayList<>();
+                int existingSize = existingLandmark.coordinates.size();
+                int newSize = newCoordinates.size();
+        
+                // Average coordinates
+                for (int i = 0; i < Math.min(existingSize, newSize); i++) {
+                    CloudPoint existingCP = existingLandmark.coordinates.get(i);
+                    CloudPoint newCP = newCoordinates.get(i);
+        
+                    double avgX = (existingCP.getX() + newCP.getX()) / 2;
+                    double avgY = (existingCP.getY() + newCP.getY()) / 2;
+        
+                    refinedCoordinates.add(new CloudPoint(avgX, avgY));
+                }
+        
+                // Handle excess coordinates if the new List is longer
+                for (int i = Math.min(existingSize, newSize); i < newSize; i++) {
+                    refinedCoordinates.add(newCoordinates.get(i));
+                }
+        
+                existingLandmark.coordinates = refinedCoordinates;
+        
+                System.out.println("Updated landmark with ID: " + id);
             }
     
-            // Handle excess coordinates if the new List is longer
-            for (int i = Math.min(existingSize, newSize); i < newSize; i++) {
-                refinedCoordinates.add(newCoordinates.get(i));
-            }
-    
-            existingLandmark.coordinates = refinedCoordinates;
-    
-            // Update description if different
-            if (!existingLandmark.description.equals(newDescription)) {
-                existingLandmark.description = newDescription;
-            }
-    
-            System.out.println("Updated landmark with ID: " + id);
+
         }
     }
         
@@ -184,10 +184,8 @@ public class FusionSlam {
         return unhandledTrackedObjects;
     }
 
-   public void removeHandledTrackedObjects(ArrayList<TrackedObjectsEvent> e){
-    for (TrackedObjectsEvent event : e){
-        unhandledTrackedObjects.remove(event); //suspected issue
-    }
+    public synchronized void removeHandledTrackedObjects(ArrayList<TrackedObjectsEvent> handledEvents) {
+        unhandledTrackedObjects.removeAll(handledEvents);
     }
    
 
@@ -202,7 +200,7 @@ public class FusionSlam {
         }
     }
 
-    public Pose getPoseByTime(int time){
+    public synchronized Pose getPoseByTime(int time){
         for (Pose p : poses){
             if (p.getTime() == time){
                 return p;

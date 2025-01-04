@@ -130,6 +130,10 @@ public class FusionSlamService extends MicroService {
             String id = trackedObject.getId();
             String description = trackedObject.getDescription();
             ArrayList<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
+            if (id.equals("Wall_1")){
+                System.out.println("Wall_1");
+                //sendBroadcast(new CrashedBroadcast(id, description));
+            }
             // to transform the coordinates to the global map
 
             fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates, fusionSlam.getPoseByTime(time) ) );
