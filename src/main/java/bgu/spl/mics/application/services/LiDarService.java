@@ -105,7 +105,7 @@ public class LiDarService extends MicroService {
                                 // we can create the object
                                 handled.add(e);
                                 processedCloudPoints.add(s);
-                                curr = new TrackedObject(d.getId(), tickBroadcast.getTick(), d.getDescripition(),s.getCloudPoints());
+                                curr = new TrackedObject(d.getId(), e.getTickTime(), d.getDescripition(),s.getCloudPoints());
                                 newlyTracked.add(curr);
                                 liDarWorkerTracker.reportTracked();
                                 liDarWorkerTracker.addLastTrackedObject(curr);

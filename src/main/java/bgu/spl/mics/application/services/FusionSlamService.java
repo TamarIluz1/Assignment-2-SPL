@@ -30,7 +30,6 @@ public class FusionSlamService extends MicroService {
 
     private final FusionSlam fusionSlam;
     private int currentTime;
-    private int poseCounter = 0;
 
     public FusionSlamService(FusionSlam fusionSlam) {
         super("FusionSlamService");
@@ -81,7 +80,8 @@ public class FusionSlamService extends MicroService {
         // Subscribe to TrackedObjectsEvent
         subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {
             // Process tracked objects and update landmarks
-            if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime()){ // we have the pose for this tick
+
+            if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime() & currentTime >= trackedObjectsEvent.getTickTime()){ // we have the pose for this tick
                 handleEvent(trackedObjectsEvent, trackedObjectsEvent.getTickTime());
             }
 
@@ -96,14 +96,26 @@ public class FusionSlamService extends MicroService {
         // Subscribe to PoseEvent
         subscribeEvent(PoseEvent.class, poseEvent -> {
                 Pose pose = poseEvent.getPose();
-                poseCounter = pose.getTime();
+                System.err.println("[Fusion] got pose at time "+pose.getTime());
                 fusionSlam.addPose(pose); // Update the robot's pose in FusionSlam
                 complete(poseEvent, pose); // Acknowledge processing is done
+                //  we'll check if we can handle event now.
+                if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
+                    // we might be able to handle the event now
+                    ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
+                    for (TrackedObjectsEvent e : fusionSlam.getUnhandledTrackedObjects()){
+                        if (e.getTickTime() <= currentTime & fusionSlam.getPoses().size() >= e.getTickTime()){
+                            handleEvent(e, e.getTickTime());
+                            handled.add(e);
+                        }
+                    }
+                    fusionSlam.removeHandledTrackedObjects(handled);
+                }
         });
 
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
-            System.out.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
+            System.err.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
             ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
             currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
@@ -125,13 +137,16 @@ public class FusionSlamService extends MicroService {
         
     }
 
-    public synchronized  void handleEvent(TrackedObjectsEvent trackedObjectsEvent, int time){
+    public void handleEvent(TrackedObjectsEvent trackedObjectsEvent, int time){
         trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
             String id = trackedObject.getId();
+            if (id.equals("Door")){
+                System.err.println("DOOR");
+            }
             String description = trackedObject.getDescription();
             ArrayList<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
-            if (id.equals("Wall_1")){
-                System.out.println("Wall_1");
+            if (id.equals("Door")){
+                System.err.println("Door");
                 //sendBroadcast(new CrashedBroadcast(id, description));
             }
             // to transform the coordinates to the global map

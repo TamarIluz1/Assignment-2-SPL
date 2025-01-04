@@ -86,6 +86,7 @@ public class CameraService extends MicroService {
                             GurionRockRunner.setFaultySensor("Camera" + camera.getId()); 
                             // forcibly "Camera1" so the JSON matches "faultySensor": "Camera1"
         
+
                             sendBroadcast(new CrashedBroadcast("camera " +camera.getId(), "Camera error detected at tick " + currentTick));
                             terminateService();
                             return;
@@ -94,9 +95,9 @@ public class CameraService extends MicroService {
                         }
                         StatisticalFolder.getInstance().incrementDetectedObjects(1);
                     }
-                    
 
                     GurionRockRunner.getLastCamerasFrame().put("Camera" + camera.getId(), nextDetected);
+                    
                     DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
                     sendEvent(e);
                     

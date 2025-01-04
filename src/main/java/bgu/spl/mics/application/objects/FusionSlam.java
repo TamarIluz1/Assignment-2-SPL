@@ -52,11 +52,14 @@ public class FusionSlam {
      *
      * @param landmark The landmark to add.
      */
-    public synchronized void addLandmark(LandMark landmark) {
-        landmarks.add(landmark);
+    public void addLandmark(LandMark landmark) {
+        synchronized(landmarks){
+            landmarks.add(landmark);
+        }
+        
     }
 
-    public synchronized ArrayList<CloudPoint> convertToGlobal(List<CloudPoint> localCoordinates, Pose pose) {
+    public ArrayList<CloudPoint> convertToGlobal(List<CloudPoint> localCoordinates, Pose pose) {
         ArrayList<CloudPoint> globalCoordinates = new ArrayList<>();
         for (CloudPoint localCP : localCoordinates) {
             globalCoordinates.add(transform(localCP, pose));
@@ -64,7 +67,7 @@ public class FusionSlam {
         return globalCoordinates;
     }
     
-    public synchronized CloudPoint transform(CloudPoint localCP, Pose pose) {
+    public CloudPoint transform(CloudPoint localCP, Pose pose) {
         // Convert yaw angle to radians
         double yawRadians = Math.toRadians(pose.getYaw());
         
@@ -89,8 +92,11 @@ public class FusionSlam {
      *
      * @return A copy of the List of landmarks.
      */
-    public synchronized ArrayList<LandMark> getLandmarks() {
-        return new ArrayList <>(landmarks); // Return a copy for thread safety
+    public ArrayList<LandMark> getLandmarks() {
+        synchronized(landmarks){
+            return new ArrayList <>(landmarks); // Return a copy for thread safety
+
+        }
     }
 
     /**
@@ -100,18 +106,22 @@ public class FusionSlam {
      * @return The landmark with the specified ID, or null if not found.
      */
     public synchronized LandMark findLandmarkById(String id) {
-        for (LandMark landmark : landmarks) {
-            if (landmark.getId().equals(id)) {
-                return landmark;
+        synchronized(landmarks){
+            for (LandMark landmark : landmarks) {
+                if (landmark.getId().equals(id)) {
+                    return landmark;
+                }
             }
+            return null;
         }
-        return null;
+
     }
 
-    public synchronized void addOrUpdateLandmark(String id, String newDescription, ArrayList <CloudPoint> newCoordinates) {
+    public void addOrUpdateLandmark(String id, String newDescription, ArrayList <CloudPoint> newCoordinates) {
         // Search for existing landmark by ID
+        LandMark existingLandmark = null;
         synchronized (landmarks) {
-            LandMark existingLandmark = null;
+            
             for (LandMark landmark : landmarks) {
                 if (landmark.id.equals(id)) {
                     existingLandmark = landmark;
@@ -161,8 +171,10 @@ public class FusionSlam {
         }
     }
         
-    public synchronized int getNumLandmarks() {
-        return landmarks.size();
+    public int getNumLandmarks() {
+        synchronized(landmarks){
+            return landmarks.size();
+        }
     }
 
     public void reportTracked(){
