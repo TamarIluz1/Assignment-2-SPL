@@ -136,7 +136,7 @@ public class FusionSlamService extends MicroService {
             }
             // to transform the coordinates to the global map
 
-            fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates, fusionSlam.getPoseByTime(time) ) );
+            fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates, fusionSlam.getPoseByTime(time)));
         });
         complete(trackedObjectsEvent, true); // Acknowledge processing is done
     }
