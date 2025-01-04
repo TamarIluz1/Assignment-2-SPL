@@ -82,7 +82,7 @@ public class FusionSlamService extends MicroService {
             // Process tracked objects and update landmarks
 
             if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime() & currentTime >= trackedObjectsEvent.getTickTime()){ // we have the pose for this tick
-                handleEvent(trackedObjectsEvent, trackedObjectsEvent.getTickTime());
+                handleEvent(trackedObjectsEvent);
             }
 
             else{ // we don't have the pose for this trackedEvent
@@ -105,7 +105,7 @@ public class FusionSlamService extends MicroService {
                     ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
                     for (TrackedObjectsEvent e : fusionSlam.getUnhandledTrackedObjects()){
                         if (e.getTickTime() <= currentTime & fusionSlam.getPoses().size() >= e.getTickTime()){
-                            handleEvent(e, e.getTickTime());
+                            handleEvent(e);
                             handled.add(e);
                         }
                     }
@@ -121,7 +121,7 @@ public class FusionSlamService extends MicroService {
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
                     if ( fusionSlam.getPoses().size() >= trackedObjectsEvent.getTickTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTickTime()){
-                        handleEvent(trackedObjectsEvent, trackedObjectsEvent.getTickTime());
+                        handleEvent(trackedObjectsEvent);
                         handled.add(trackedObjectsEvent);
                 }
             }
@@ -137,7 +137,7 @@ public class FusionSlamService extends MicroService {
         
     }
 
-    public void handleEvent(TrackedObjectsEvent trackedObjectsEvent, int time){
+    public void handleEvent(TrackedObjectsEvent trackedObjectsEvent){
         trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
             String id = trackedObject.getId();
             if (id.equals("Door")){
@@ -151,7 +151,7 @@ public class FusionSlamService extends MicroService {
             }
             // to transform the coordinates to the global map
 
-            fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates, fusionSlam.getPoseByTime(time)));
+            fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates,fusionSlam.getPoseByTime(trackedObjectsEvent.getTickTime())));
         });
         complete(trackedObjectsEvent, true); // Acknowledge processing is done
     }

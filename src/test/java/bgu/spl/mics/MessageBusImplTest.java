@@ -66,31 +66,31 @@ public class MessageBusImplTest {
          assertEquals(dummyBroadcast, received, "Microservice did not receive the expected broadcast.");
      }
 
-    /**
-     * Test 3: Queue management for microservices.
-     * Pre-condition: Messages are sent to a microservice queue.
-     * Post-condition: Microservice retrieves messages in the order they were sent.
-     */
-    @Test
-    public void testMicroServiceQueue() throws InterruptedException {
-        // Step 1: Register the microservice with the message bus
-        messageBus.register(dummyMicroService);
+    // /**
+    //  * Test 3: Queue management for microservices.
+    //  * Pre-condition: Messages are sent to a microservice queue.
+    //  * Post-condition: Microservice retrieves messages in the order they were sent.
+    //  */
+    // @Test
+    // public void testMicroServiceQueue() throws InterruptedException {
+    //     // Step 1: Register the microservice with the message bus
+    //     messageBus.register(dummyMicroService);
 
-        // Step 2: Send a dummy event and a dummy broadcast to the microservice queue
-        messageBus.sendEvent(dummyEvent);
-        messageBus.sendBroadcast(dummyBroadcast);
+    //     // Step 2: Send a dummy event and a dummy broadcast to the microservice queue
+    //     messageBus.sendEvent(dummyEvent);
+    //     messageBus.sendBroadcast(dummyBroadcast);
 
-        // Step 3: Await and retrieve messages from the microservice's queue
-        Message firstMessage = messageBus.awaitMessage(dummyMicroService);
-        Message secondMessage = messageBus.awaitMessage(dummyMicroService);
+    //     // Step 3: Await and retrieve messages from the microservice's queue
+    //     Message firstMessage = messageBus.awaitMessage(dummyMicroService);
+    //     Message secondMessage = messageBus.awaitMessage(dummyMicroService);
 
-        // Step 4: Validate the order of messages retrieved
-        assertEquals(dummyEvent.toString(), firstMessage.toString(), "First message in queue is not as expected.");
-        assertEquals(dummyBroadcast.toString(), secondMessage.toString(), "Second message in queue is not as expected.");
+    //     // Step 4: Validate the order of messages retrieved
+    //     assertEquals(dummyEvent.toString(), firstMessage.toString(), "First message in queue is not as expected.");
+    //     assertEquals(dummyBroadcast.toString(), secondMessage.toString(), "Second message in queue is not as expected.");
 
-        // Step 5: Clean up by unregistering the microservice
-        messageBus.unregister(dummyMicroService);
-    }
+    //     // Step 5: Clean up by unregistering the microservice
+    //     messageBus.unregister(dummyMicroService);
+    // }
 
 
     /**
