@@ -20,10 +20,12 @@ public class GPSIMU {
 
     public Pose getCurrentPose() {
         // Find the pose that matches the current tick, default to the last known pose if not found
-        return poseList.stream()
-                .filter(pose -> pose.getTime() == currentTick)
-                .findFirst()
-                .orElse(poseList.isEmpty() ? null : poseList.get(poseList.size() - 1)); // Safe fallback to the last element
+        for (Pose pose : poseList) {
+            if (pose.getTime() == currentTick) {
+                return pose;
+            }
+        }
+        return null;
     }
 
     public void setCurrentTick(int tick) {
