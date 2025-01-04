@@ -68,6 +68,18 @@ public class Camera {
             return null;
         }
     }
+
+
+
+    @Override
+    public String toString() {
+        return "Camera{" +
+               "id=" + id +
+               ", frequency=" + frequency +
+               ", status=" + status +
+               ", detectedObjectsListSize=" + detectedObjectsList.size() +
+               '}';
+    }
 }
 
 

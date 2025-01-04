@@ -210,5 +210,32 @@ public class FusionSlam {
     }
 
 
+    /**
+     * Processes tracked objects into landmarks (for testing purposes).
+     * 
+     * @param trackedObjectsEvent The event containing tracked objects to be processed.
+     */
+    public synchronized void processTrackedObjectsToLandmarks(TrackedObjectsEvent trackedObjectsEvent) {
+        int time = trackedObjectsEvent.getTickTime();
+        Pose pose = getPoseByTime(time);
+
+        if (pose == null) {
+            throw new IllegalStateException("Pose not found for time: " + time);
+        }
+
+        trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
+            String id = trackedObject.getId();
+            String description = trackedObject.getDescription();
+            ArrayList<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
+
+            // Transform coordinates to the global map
+            ArrayList<CloudPoint> globalCoordinates = convertToGlobal(trackedCoordinates, pose);
+
+            // Add or update the landmark
+            addOrUpdateLandmark(id, description, globalCoordinates);
+        });
+    }
+
+
     
 }

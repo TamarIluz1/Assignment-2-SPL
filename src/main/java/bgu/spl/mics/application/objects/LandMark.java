@@ -34,5 +34,14 @@ public class LandMark {
         this.coordinates.addAll(coordinates);
     }
 
+    @Override
+    public String toString() {
+        return "LandMark{" +
+               "id='" + id + '\'' +
+               ", description='" + description + '\'' +
+               ", coordinates=" + coordinates +
+               '}';
+    }
+
     
 }

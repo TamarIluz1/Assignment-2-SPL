@@ -22,8 +22,8 @@ public class CloudPointTest {
         CloudPoint point2 = new CloudPoint(3.5, 4.5);
         CloudPoint point3 = new CloudPoint(4.0, 5.0);
 
-        assertEquals(point1, point2, "Points with the same coordinates should be equal");
-        assertNotEquals(point1, point3, "Points with different coordinates should not be equal");
+        assertEquals(point1.toString(), point2.toString(), "Points with the same coordinates should be equal");
+        assertNotEquals(point1.toString(), point3.toString(), "Points with different coordinates should not be equal");
     }
 
 

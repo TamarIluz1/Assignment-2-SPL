@@ -3,7 +3,6 @@ package bgu.spl.mics.application.services;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -82,11 +81,6 @@ public class CameraService extends MicroService {
                         if (object.getId().equals("ERROR")) {
                             // Handle camera error scenario
                             camera.setStatus(STATUS.ERROR);
-                            GurionRockRunner.setSystemCrashed(true);
-                            GurionRockRunner.setFaultySensor("Camera" + camera.getId()); 
-                            // forcibly "Camera1" so the JSON matches "faultySensor": "Camera1"
-        
-
                             sendBroadcast(new CrashedBroadcast("camera " +camera.getId(), "Camera error detected at tick " + currentTick));
                             terminateService();
                             return;
@@ -95,8 +89,6 @@ public class CameraService extends MicroService {
                         }
                         StatisticalFolder.getInstance().incrementDetectedObjects(1);
                     }
-
-                    GurionRockRunner.getLastCamerasFrame().put("Camera" + camera.getId(), nextDetected);
                     
                     DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
                     sendEvent(e);

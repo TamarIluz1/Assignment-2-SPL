@@ -28,4 +28,13 @@ public class StampedCloudPoints {
     public ArrayList<CloudPoint> getCloudPoints(){
         return cloudPoints;
     }
+
+    @Override
+    public String toString() {
+        return "StampedCloudPoints{" +
+               "id='" + id + '\'' +
+               ", time=" + time +
+               ", cloudPoints=" + cloudPoints +
+               '}';
+    }
 }

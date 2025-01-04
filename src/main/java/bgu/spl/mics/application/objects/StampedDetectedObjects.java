@@ -25,4 +25,12 @@ public class StampedDetectedObjects {
     public ArrayList<DetectedObject> getDetectedObjects() {
         return new ArrayList<>(detectedObjects);
     }
+
+    @Override
+    public String toString() {
+        return "StampedDetectedObjects{" +
+               "time=" + time +
+               ", detectedObjects=" + detectedObjects +
+               '}';
+    }
 }

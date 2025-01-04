@@ -32,5 +32,15 @@ public class Pose {
     public int getTime() {
         return time;
     }
+
+    @Override
+    public String toString() {
+        return "Pose{" +
+               "x=" + x +
+               ", y=" + y +
+               ", yaw=" + yaw +
+               ", time=" + time +
+               '}';
+    }
     
 }
