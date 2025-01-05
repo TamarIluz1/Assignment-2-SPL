@@ -24,8 +24,11 @@ import bgu.spl.mics.application.objects.StatisticalFolder;
 public class CameraService extends MicroService {
 
     private final  Camera camera;
+
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private StampedDetectedObjects nextDetected;
+
+
     /**
      * Constructor for CameraService.
      *
@@ -84,6 +87,7 @@ public class CameraService extends MicroService {
                             camera.setStatus(STATUS.ERROR);
                             GurionRockRunner.setSystemCrashed(true);
                             GurionRockRunner.setFaultySensor("Camera" + camera.getId()); 
+                            GurionRockRunner.setErorrMassage(object.getDescripition());
                             // forcibly "Camera1" so the JSON matches "faultySensor": "Camera1"
         
 
@@ -93,8 +97,13 @@ public class CameraService extends MicroService {
                             
                             
                         }
+
                         StatisticalFolder.getInstance().incrementDetectedObjects(1);
+
+
                     }
+
+
 
                     GurionRockRunner.getLastCamerasFrame().put("Camera" + camera.getId(), nextDetected);
                     
@@ -103,6 +112,9 @@ public class CameraService extends MicroService {
                     
                     nextDetected = camera.getNextDetectedObjects();
                 }
+            }
+            else{
+                terminateService();
             }
         });
         System.out.println("CamaraService initialized successfully.");

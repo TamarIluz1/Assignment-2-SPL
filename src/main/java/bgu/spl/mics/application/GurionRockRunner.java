@@ -53,6 +53,9 @@ public class GurionRockRunner {
     private static volatile boolean systemCrashed = false;
     private static String faultySensor = null;
 
+    
+
+
     // For camera frames
     private static final Map<String, StampedDetectedObjects> lastCamerasFrame = new HashMap<>();
 
@@ -71,6 +74,9 @@ public class GurionRockRunner {
     // Setters used by services on crashes
     public static void setSystemCrashed(boolean crashed) { systemCrashed = crashed; }
     public static void setFaultySensor(String sensorName) { faultySensor = sensorName; }
+    
+    private static String errror_msg = null;
+    public static void setErorrMassage(String msg) {errror_msg = msg;}
 
     public static Map<String, StampedDetectedObjects> getLastCamerasFrame() { return lastCamerasFrame; }
     public static Map<String, StampedCloudPoints> getLastLiDarWorkerTrackersFrame() { return lastLiDarWorkerTrackersFrame; }
@@ -80,10 +86,8 @@ public class GurionRockRunner {
 
     public static void main(String[] args) {
         System.out.println("Starting Simulation...");
-        if (args.length < 1) {
-            System.out.println("Configuration file path must be provided as the first arg.");
-            System.exit(1);
-        }
+
+
         String configFilePath = args[0];
 
         try {
@@ -112,7 +116,7 @@ public class GurionRockRunner {
             if (systemCrashed) {
                 writeErrorOutput(
                     "error_output.json",
-                    "Camera disconnected", // or "LiDar disconnected" etc.
+                    errror_msg, // or "LiDar disconnected" etc.
                     (faultySensor != null ? faultySensor : "UnknownSensor"),
                     lastCamerasFrame,
                     lastLiDarWorkerTrackersFrame,
@@ -299,24 +303,13 @@ public class GurionRockRunner {
         StatisticalFolder statistics
     ) {
         try {
-            
-            // Decide the final error message based on faultySensor's first letter
-            String finalErrorMessage;
-            if (faultySensor.startsWith("C")) {
-                finalErrorMessage = "Camera disconnected";
-            } else if (faultySensor.startsWith("L")) {
-                finalErrorMessage = "LiDar disconnected";
-            } else {
-                finalErrorMessage = errorMessage; 
-                // Fallback: use the given errorMessage if it's neither "C" nor "L"
-            }
+        
 
 
             JsonObject errorOutput = new JsonObject();
 
             errorOutput.addProperty("error", errorMessage);
             errorOutput.addProperty("faultySensor", faultySensor);
-
             // lastCamerasFrame
             JsonObject camerasFrameJson = new JsonObject();
             for (Map.Entry<String, StampedDetectedObjects> entry : lastCamerasFrame.entrySet()) {

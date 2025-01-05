@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.services;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
@@ -25,8 +27,11 @@ import bgu.spl.mics.application.objects.TrackedObject;
  * observations.
  */
 public class LiDarService extends MicroService {
+    private int currentTick;
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private final LiDarWorkerTracker liDarWorkerTracker;
+    private final Set<String> trackedObjectIdsInCurrentTick = new HashSet<>();
+
     ArrayList<StampedCloudPoints> ToProcessCloudPoints = new ArrayList<>();
     /**
      * Constructor for LiDarService.
@@ -59,6 +64,7 @@ public class LiDarService extends MicroService {
         
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast->{
             if (terminateBroadcast.getSender().equals("time")){
+                liDarWorkerTracker.setStatus(STATUS.DOWN);
                 System.out.println("recieved termination at lidar" + liDarWorkerTracker.getId() + "TERMINATING");
                 terminateService();
             }
@@ -71,7 +77,11 @@ public class LiDarService extends MicroService {
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
-            if (liDarWorkerTracker.getStatus() == STATUS.UP){
+            trackedObjectIdsInCurrentTick.clear(); // Clear for the new tick
+
+            currentTick = tickBroadcast.getTick();
+            if (liDarWorkerTracker.getStatus() == STATUS.UP && !GurionRockRunner.isSystemCrashed()) {
+
                 if (liDarWorkerTracker.isFinished()){
                     liDarWorkerTracker.setStatus(STATUS.DOWN);
                     System.out.println("Lidar terminated at tick "+ tickBroadcast.getTick());
@@ -89,6 +99,8 @@ public class LiDarService extends MicroService {
                     // if the relevant event is availiable- add the tracked objects
                     if (s.getId().equals("ERROR")){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
+                        GurionRockRunner.setErorrMassage("LidarWorkerTracker" + liDarWorkerTracker.getId() + " Disconnected");
+
                         GurionRockRunner.setSystemCrashed(true);
                         GurionRockRunner.setFaultySensor("LiDar" + liDarWorkerTracker.getId());
                         sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
@@ -98,18 +110,38 @@ public class LiDarService extends MicroService {
                     for (DetectObjectsEvent e :liDarWorkerTracker.getEventsRecieved()){
                         for (DetectedObject d : e.getObjectDetails().getDetectedObjects()){
                             
-                            if (d.getId().equals(s.getId())){
-                                if (d.getId().equals("Door")){
-                                    System.out.println("Door detected at tick " + tickBroadcast.getTick());
-                                }
-                                // we can create the object
+
+                            if (d.getId().equals(s.getId()) && !trackedObjectIdsInCurrentTick.contains(d.getId())) {
+                                // Add to unique tracked set for the tick
+                                trackedObjectIdsInCurrentTick.add(d.getId());
                                 handled.add(e);
+                                // Create the tracked object
                                 processedCloudPoints.add(s);
-                                curr = new TrackedObject(d.getId(), e.getTickTime(), d.getDescripition(),s.getCloudPoints());
+                                curr = new TrackedObject(d.getId(), e.getTickTime(), d.getDescripition(), s.getCloudPoints());
                                 newlyTracked.add(curr);
+        
+                                // Increment numTrackedObjects
                                 liDarWorkerTracker.reportTracked();
                                 liDarWorkerTracker.addLastTrackedObject(curr);
+
+        
+                                System.out.println("LidarWorkerTracker" + liDarWorkerTracker.getId() + " detected object " + d.getId() + " at tick " + currentTick);
                             }
+
+
+                            // if (d.getId().equals(s.getId())){
+                            //     if (d.getId().equals("Door")){
+                            //         System.out.println("Door detected at tick " + tickBroadcast.getTick());
+                            //     }
+                            //     // we can create the object
+                            //     handled.add(e);
+                            //     processedCloudPoints.add(s);
+                            //     curr = new TrackedObject(d.getId(), e.getTickTime(), d.getDescripition(),s.getCloudPoints());
+                            //     newlyTracked.add(curr);
+                            //     liDarWorkerTracker.reportTracked();
+                            //     System.out.println("LidarWorkerTracker" + liDarWorkerTracker.getId() + " detected object " + d.getId() + " at tick " + tickBroadcast.getTick() + " and summed to " + (StatisticalFolder.getInstance().getNumTrackedObjects())+"");
+                            //     liDarWorkerTracker.addLastTrackedObject(curr);
+                            // }
                             
                         }
                     }
@@ -117,18 +149,27 @@ public class LiDarService extends MicroService {
                 liDarWorkerTracker.handleProcessedDetected(handled);
                 for (StampedCloudPoints s : processedCloudPoints){
                     ToProcessCloudPoints.remove(s);
+
+                    String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
+                    StampedCloudPoints lastFrame = s;
+                    GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
                 }
 
                 if (!newlyTracked.isEmpty()){
                     sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
                 }
 
-                if (!newCloudPoints.isEmpty() && !GurionRockRunner.isSystemCrashed() ) {
-                    String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
-                    StampedCloudPoints lastFrame = newCloudPoints.get(newCloudPoints.size() - 1);
-                    GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
-                }
+                // if (!newCloudPoints.isEmpty() && !GurionRockRunner.isSystemCrashed() ) {
+                //     String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
+                //     StampedCloudPoints lastFrame = newCloudPoints.get(newCloudPoints.size() - 1);
+                //     GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
+                // }
             }
+            else{
+                System.out.println("LidarWorkerTracker" + liDarWorkerTracker.getId() + " terminated at tick " + tickBroadcast.getTick());
+                terminateService();
+            }
+
         });
 
         subscribeEvent(DetectObjectsEvent.class, detectObjectsEvent -> {
