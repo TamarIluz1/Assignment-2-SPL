@@ -94,22 +94,12 @@ public class CameraService extends MicroService {
                             sendBroadcast(new CrashedBroadcast("camera " +camera.getId(), "Camera error detected at tick " + currentTick));
                             terminateService();
                             return;
-                            
-                            
                         }
-
                         StatisticalFolder.getInstance().incrementDetectedObjects(1);
-
-
                     }
 
-
-
                     GurionRockRunner.getLastCamerasFrame().put("Camera" + camera.getId(), nextDetected);
-                    
-                    DetectObjectsEvent e = new DetectObjectsEvent(currentTick, nextDetected);
-                    sendEvent(e);
-                    
+                    sendEvent(new DetectObjectsEvent(currentTick, nextDetected));
                     nextDetected = camera.getNextDetectedObjects();
                 }
             }

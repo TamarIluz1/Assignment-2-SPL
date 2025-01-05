@@ -105,7 +105,7 @@ public class FusionSlam {
      * @param id The ID of the landmark.
      * @return The landmark with the specified ID, or null if not found.
      */
-    public synchronized LandMark findLandmarkById(String id) {
+    public LandMark findLandmarkById(String id) {
         synchronized(landmarks){
             for (LandMark landmark : landmarks) {
                 if (landmark.getId().equals(id)) {
@@ -183,36 +183,37 @@ public class FusionSlam {
         }
     }
 
-    public synchronized void setSensorAmount(int sensorAmount){
+    public void setSensorAmount(int sensorAmount){
         this.sensorAmount = sensorAmount;
 
     }
 
-    public synchronized void addUnhandledTrackedObject(TrackedObjectsEvent e){
+    public void addUnhandledTrackedObject(TrackedObjectsEvent e){
         unhandledTrackedObjects.add(e);
+        
     }
 
-    public synchronized List<TrackedObjectsEvent> getUnhandledTrackedObjects(){
+    public List<TrackedObjectsEvent> getUnhandledTrackedObjects(){
         return unhandledTrackedObjects;
+        
     }
 
-    public synchronized void removeHandledTrackedObjects(ArrayList<TrackedObjectsEvent> handledEvents) {
+    public void removeHandledTrackedObjects(ArrayList<TrackedObjectsEvent> handledEvents) {
         unhandledTrackedObjects.removeAll(handledEvents);
     }
    
 
-    public synchronized boolean isFinished(){
-        synchronized(terminatedCounterLock){
-            if (terminatedCounter == sensorAmount){
-                return true;
-            }
-            else{
-                return false;
-            }
+    public boolean isFinished(){
+        if (terminatedCounter == sensorAmount & unhandledTrackedObjects.size() == 0){
+            return true;
         }
+        else{
+            return false;
+        }
+        
     }
 
-    public synchronized Pose getPoseByTime(int time){
+    public Pose getPoseByTime(int time){
         for (Pose p : poses){
             if (p.getTime() == time){
                 return p;
@@ -227,7 +228,7 @@ public class FusionSlam {
      * 
      * @param trackedObjectsEvent The event containing tracked objects to be processed.
      */
-    public synchronized void processTrackedObjectsToLandmarks(TrackedObjectsEvent trackedObjectsEvent) {
+    public void processTrackedObjectsToLandmarks(TrackedObjectsEvent trackedObjectsEvent) {
         int time = trackedObjectsEvent.getTime();
         Pose pose = getPoseByTime(time);
 

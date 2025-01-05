@@ -141,7 +141,7 @@ public class FusionSlamService extends MicroService {
 
         trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
             String id = trackedObject.getId();
-            if (id.equals("Circular_Base_1")){
+            if (id.equals("Circular_Base_1") | trackedObjectsEvent.getTime() > 17){
                 System.err.println("Circular_Base_1");
             }
             String description = trackedObject.getDescription();
