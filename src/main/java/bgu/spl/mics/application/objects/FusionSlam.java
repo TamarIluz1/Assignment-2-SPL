@@ -128,6 +128,7 @@ public class FusionSlam {
                     break;
                 }
             }
+            
         
             if (existingLandmark == null) {
                 // Add new landmark

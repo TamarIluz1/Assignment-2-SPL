@@ -3,6 +3,7 @@ package bgu.spl.mics.application.services;
 import java.util.ArrayList;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -81,10 +82,9 @@ public class FusionSlamService extends MicroService {
         subscribeEvent(TrackedObjectsEvent.class, trackedObjectsEvent -> {
             // Process tracked objects and update landmarks
 
-            if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & currentTime >= trackedObjectsEvent.getTime()){ // we have the pose for this tick
+            if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & currentTime >= trackedObjectsEvent.getTime() && !GurionRockRunner.isSystemCrashed()){ // we have the pose for this tick
                 handleEvent(trackedObjectsEvent);
             }
-
             else{ // we don't have the pose for this trackedEvent
                 fusionSlam.addUnhandledTrackedObject(trackedObjectsEvent);
             }
@@ -100,7 +100,7 @@ public class FusionSlamService extends MicroService {
                 fusionSlam.addPose(pose); // Update the robot's pose in FusionSlam
                 complete(poseEvent, pose); // Acknowledge processing is done
                 //  we'll check if we can handle event now.
-                if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
+                if (!fusionSlam.getUnhandledTrackedObjects().isEmpty() && !GurionRockRunner.isSystemCrashed()){
                     // we might be able to handle the event now
                     ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
                     for (TrackedObjectsEvent e : fusionSlam.getUnhandledTrackedObjects()){
@@ -118,15 +118,18 @@ public class FusionSlamService extends MicroService {
             System.err.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
             ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
             currentTime = tickBroadcast.getTick();
-            if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
-                for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
-                    if ( fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTime()){
-                        handleEvent(trackedObjectsEvent);
-                        handled.add(trackedObjectsEvent);
+                if (!fusionSlam.getUnhandledTrackedObjects().isEmpty() && !GurionRockRunner.isSystemCrashed()){
+                    for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
+                        if ( fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTime() ){
+                            handleEvent(trackedObjectsEvent);
+                            handled.add(trackedObjectsEvent);
+                    }
+                    fusionSlam.removeHandledTrackedObjects(handled);
                 }
-            }
 
-            fusionSlam.removeHandledTrackedObjects(handled);
+            
+        
+            //fusionSlam.removeHandledTrackedObjects(handled);
 
         }
 

@@ -65,14 +65,14 @@ public class CameraService extends MicroService {
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             System.out.println(camera.getId() + "CAMERA CRASHBROADCAST camera received CrashedBroadcast.");
-            camera.setStatus(STATUS.ERROR);
+            camera.setStatus(STATUS.DOWN);
             terminateService();
         });
     
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             int currentTick = tickBroadcast.getTick();
-            if (camera.getStatus() == STATUS.UP) {
+            if (camera.getStatus() == STATUS.UP ) {
                 if (nextDetected == null) {
                     // finished working- no more objects to detect
                     System.out.println("Camera " + camera.getId() + " terminated at tick " + currentTick);
@@ -114,6 +114,7 @@ public class CameraService extends MicroService {
                 }
             }
             else{
+                
                 terminateService();
             }
         });
