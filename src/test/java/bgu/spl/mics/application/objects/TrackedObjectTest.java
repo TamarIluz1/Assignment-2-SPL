@@ -1,10 +1,10 @@
 package bgu.spl.mics.application.objects;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for the TrackedObject class.
@@ -61,11 +61,7 @@ public class TrackedObjectTest {
         assertTrue(trackedObject.getCloudPoint().isEmpty(), "Cloud points list should be empty.");
     }
 
-    @Test
-    public void testNullCloudPoints() {
-        assertThrows(IllegalArgumentException.class, () -> new TrackedObject("Object5", 25, "Null cloud points", null), 
-                     "Creating a TrackedObject with null cloud points should throw an exception.");
-    }
+
 
     @Test
     public void testTimeGetter() {

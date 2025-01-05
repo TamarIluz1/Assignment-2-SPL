@@ -1,15 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: bgu.spl.mics.application.objects.TrackedObjectTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.076 s <<< FAILURE! -- in bgu.spl.mics.application.objects.TrackedObjectTest
-bgu.spl.mics.application.objects.TrackedObjectTest.testNullCloudPoints -- Time elapsed: 0.008 s <<< FAILURE!
-org.opentest4j.AssertionFailedError: Creating a TrackedObject with null cloud points should throw an exception. ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown.
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:39)
-	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3153)
-	at bgu.spl.mics.application.objects.TrackedObjectTest.testNullCloudPoints(TrackedObjectTest.java:66)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.095 s -- in bgu.spl.mics.application.objects.TrackedObjectTest

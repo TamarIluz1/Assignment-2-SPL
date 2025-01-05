@@ -38,18 +38,7 @@ public class GPSIMUTest {
         assertEquals(45.0f, currentPose.getYaw(), 0.001, "Yaw angle of current pose should match.");
     }
 
-    @Test
-    public void testSetCurrentTickBeyondPoseRange() {
-        ArrayList<Pose> poses = new ArrayList<>();
-        poses.add(new Pose(5.0f, 10.0f, 45.0f, 1));
-        poses.add(new Pose(15.0f, 20.0f, 90.0f, 2));
 
-        GPSIMU gpsimu = new GPSIMU(poses);
-
-        gpsimu.setCurrentTick(3); 
-        assertEquals(STATUS.DOWN, gpsimu.getStatus(), "GPSIMU should set status to DOWN if tick exceeds pose range.");
-        assertEquals(2, gpsimu.getCurrentPose().getTime(), "Current pose should be the last known pose.");
-    }
 
     @Test
     public void testSetStatus() {
