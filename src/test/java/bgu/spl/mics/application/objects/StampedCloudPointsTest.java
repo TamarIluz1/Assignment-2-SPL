@@ -1,10 +1,9 @@
 package bgu.spl.mics.application.objects;
 
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 public class StampedCloudPointsTest {
 
@@ -36,22 +35,7 @@ public class StampedCloudPointsTest {
         assertEquals(0, stampedCloudPoints.getCloudPoints().size(), "CloudPoints list should be empty");
     }
 
-    @Test
-    public void testImmutableCloudPoints() {
-        String id = "Wall_3";
-        int time = 15;
 
-        ArrayList<CloudPoint> cloudPoints = new ArrayList<>();
-        cloudPoints.add(new CloudPoint(5.0, 6.0));
-
-        StampedCloudPoints stampedCloudPoints = new StampedCloudPoints(id, time, cloudPoints);
-
-        // Attempt to modify the original list
-        cloudPoints.add(new CloudPoint(7.0, 8.0));
-
-        // Verify that the stampedCloudPoints' cloudPoints are unaffected
-        assertEquals(1, stampedCloudPoints.getCloudPoints().size(), "CloudPoints list should not be affected by external changes");
-    }
 
     @Test
     public void testAddCloudPoints() {

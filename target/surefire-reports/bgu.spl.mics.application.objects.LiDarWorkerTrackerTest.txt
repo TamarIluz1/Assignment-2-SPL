@@ -1,28 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: bgu.spl.mics.application.objects.LiDarWorkerTrackerTest
 -------------------------------------------------------------------------------
-Tests run: 7, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.098 s <<< FAILURE! -- in bgu.spl.mics.application.objects.LiDarWorkerTrackerTest
-bgu.spl.mics.application.objects.LiDarWorkerTrackerTest.testGetNewCloudPointsByTime -- Time elapsed: 0.009 s <<< FAILURE!
-org.opentest4j.AssertionFailedError: No cloud points fetched for the given time. ==> expected: <true> but was: <false>
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
-	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
-	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
-	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
-	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
-	at bgu.spl.mics.application.objects.LiDarWorkerTrackerTest.testGetNewCloudPointsByTime(LiDarWorkerTrackerTest.java:110)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-
-bgu.spl.mics.application.objects.LiDarWorkerTrackerTest.testReportTrackedAndIsFinished -- Time elapsed: 0.005 s <<< FAILURE!
-org.opentest4j.AssertionFailedError: Should be finished after tracking all data. ==> expected: <true> but was: <false>
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
-	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
-	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
-	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
-	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:214)
-	at bgu.spl.mics.application.objects.LiDarWorkerTrackerTest.testReportTrackedAndIsFinished(LiDarWorkerTrackerTest.java:128)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.134 s -- in bgu.spl.mics.application.objects.LiDarWorkerTrackerTest

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.076" tests="6" errors="0" skipped="0" failures="1">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.095" tests="5" errors="0" skipped="0" failures="0">
   <properties>
-    <property name="jpda.address" value="54451"/>
     <property name="java.specification.version" value="22"/>
     <property name="sun.cpu.isalist" value="amd64"/>
     <property name="sun.jnu.encoding" value="Cp1252"/>
@@ -12,13 +11,12 @@
     <property name="java.vendor.url" value="https://java.oracle.com/"/>
     <property name="user.timezone" value="Asia/Jerusalem"/>
     <property name="user.country.format" value="IL"/>
-    <property name="forkMode" value="once"/>
     <property name="os.name" value="Windows 11"/>
     <property name="java.vm.specification.version" value="22"/>
     <property name="user.country" value="US"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-22\bin"/>
-    <property name="sun.java.command" value="C:\Users\tamar\AppData\Local\Temp\surefire2561426343693534066\surefirebooter-20250104133834560_3.jar C:\Users\tamar\AppData\Local\Temp\surefire2561426343693534066 2025-01-04T13-38-34_436-jvmRun1 surefire-20250104133834560_1tmp surefire_0-20250104133834560_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\tamar\AppData\Local\Temp\surefire937112770304811127\surefirebooter-20250105153430766_3.jar C:\Users\tamar\AppData\Local\Temp\surefire937112770304811127 2025-01-05T15-34-30_495-jvmRun1 surefire-20250105153430766_1tmp surefire_0-20250105153430766_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="test" value="bgu.spl.mics.application.objects.TrackedObjectTest"/>
     <property name="surefire.test.class.path" value="C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\target\test-classes;C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\target\classes;C:\Users\tamar\.m2\repository\com\google\code\gson\gson\2.8.9\gson-2.8.9.jar;C:\Users\tamar\.m2\repository\org\apache\commons\commons-lang3\3.12.0\commons-lang3-3.12.0.jar;C:\Users\tamar\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.11.4\junit-jupiter-api-5.11.4.jar;C:\Users\tamar\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\tamar\.m2\repository\org\junit\platform\junit-platform-commons\1.11.4\junit-platform-commons-1.11.4.jar;C:\Users\tamar\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\tamar\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.11.4\junit-jupiter-engine-5.11.4.jar;C:\Users\tamar\.m2\repository\org\junit\platform\junit-platform-engine\1.11.4\junit-platform-engine-1.11.4.jar;"/>
@@ -34,7 +32,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\tamar\AppData\Local\Temp\surefire2561426343693534066\surefirebooter-20250104133834560_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\tamar\AppData\Local\Temp\surefire937112770304811127\surefirebooter-20250105153430766_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="22.0.1+8-16"/>
@@ -45,7 +43,6 @@
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="file.encoding" value="UTF-8"/>
     <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
-    <property name="jpda.listen" value="true"/>
     <property name="maven.ext.class.path" value="C:\Users\tamar\.vscode\extensions\oracle.oracle-java-23.0.1\nbcode\java\maven-nblib\netbeans-eventspy.jar"/>
     <property name="localRepository" value="C:\Users\tamar\.m2\repository"/>
     <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
@@ -63,23 +60,10 @@
     <property name="java.vm.version" value="22.0.1+8-16"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="66.0"/>
-    <property name="maven.surefire.debug" value="-agentlib:jdwp=transport=dt_socket,server=n,address=54451"/>
   </properties>
-  <testcase name="testEmptyCloudPoints" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.032"/>
-  <testcase name="testNullCloudPoints" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.008">
-    <failure message="Creating a TrackedObject with null cloud points should throw an exception. ==&gt; Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown." type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: Creating a TrackedObject with null cloud points should throw an exception. ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown.
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:152)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:73)
-	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:39)
-	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:3153)
-	at bgu.spl.mics.application.objects.TrackedObjectTest.testNullCloudPoints(TrackedObjectTest.java:66)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
-]]></failure>
-  </testcase>
-  <testcase name="testConstructorAndGetters" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.003"/>
+  <testcase name="testEmptyCloudPoints" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.039"/>
+  <testcase name="testConstructorAndGetters" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.004"/>
   <testcase name="testTimeGetter" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.001"/>
-  <testcase name="testModifyDescription" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.0"/>
+  <testcase name="testModifyDescription" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.001"/>
   <testcase name="testAddCloudPoint" classname="bgu.spl.mics.application.objects.TrackedObjectTest" time="0.002"/>
 </testsuite>

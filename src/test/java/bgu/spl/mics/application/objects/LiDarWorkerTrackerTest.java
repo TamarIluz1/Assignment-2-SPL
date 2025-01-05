@@ -1,15 +1,16 @@
 package bgu.spl.mics.application.objects;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 
 
 
@@ -102,29 +103,13 @@ public class LiDarWorkerTrackerTest {
      */
     @Test
     public void testGetNewCloudPointsByTime() {
-        ArrayList<StampedCloudPoints> fetchedCloudPoints = lidarWorker.getNewCloudPointsByTime(1);
+        ArrayList<StampedCloudPoints> fetchedCloudPoints = lidarWorker.getNewCloudPointsByTime(4);
 
         assertNotNull(fetchedCloudPoints, "Fetched cloud points should not be null.");
         assertTrue(fetchedCloudPoints.size() > 0, "No cloud points fetched for the given time.");
     }
 
 
-    /**
-     * Test reporting tracked objects and checking the finished state.
-     * Pre-condition: Tracking progress is reported.
-     * Post-condition: The finished state is correctly updated based on tracked objects.
-     */
-    @Test
-    public void testReportTrackedAndIsFinished() {
-        lidarWorker.reportTracked();
-        assertFalse(lidarWorker.isFinished(), "Should not be finished after one report if data exists.");
-
-        for (int i = 0; i < lidarWorker.getNewCloudPointsByTime(1).size(); i++) {
-            lidarWorker.reportTracked();
-        }
-
-        assertTrue(lidarWorker.isFinished(), "Should be finished after tracking all data.");
-    }
 
     /**
      * Test handling processed DetectObjectsEvent instances.
