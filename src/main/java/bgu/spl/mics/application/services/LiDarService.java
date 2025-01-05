@@ -80,7 +80,7 @@ public class LiDarService extends MicroService {
             trackedObjectIdsInCurrentTick.clear(); // Clear for the new tick
 
             currentTick = tickBroadcast.getTick();
-            if (liDarWorkerTracker.getStatus() == STATUS.UP && !GurionRockRunner.isSystemCrashed()) {
+            if (liDarWorkerTracker.getStatus() == STATUS.UP) {
 
                 if (liDarWorkerTracker.isFinished()){
                     liDarWorkerTracker.setStatus(STATUS.DOWN);

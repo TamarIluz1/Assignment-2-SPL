@@ -32,35 +32,35 @@ public class StatisticalFolder {
         return StatisticalFolderHolder.instance;
     }
 
-    public void setSystemRuntime(int runtime) {
+    public synchronized void setSystemRuntime(int runtime) {
         this.systemRuntime = runtime;
     }
 
-    public void incrementDetectedObjects(int count) {
+    public synchronized void incrementDetectedObjects(int count) {
         numDetectedObjects.addAndGet(count);
     }
 
-    public void incrementTrackedObjects(int count) {
+    public synchronized void incrementTrackedObjects(int count) {
         numTrackedObjects.addAndGet(count);
     }
 
-    public void incrementLandMarks() {
+    public synchronized void incrementLandMarks() {
         numLandMarks.incrementAndGet();
     }
 
-    public int getSystemRuntime() {
+    public synchronized int getSystemRuntime() {
         return systemRuntime;
     }
 
-    public int getNumDetectedObjects() {
+    public  synchronized int getNumDetectedObjects() {
         return numDetectedObjects.get();
     }
 
-    public int getNumTrackedObjects() {
+    public synchronized int getNumTrackedObjects() {
         return numTrackedObjects.get();
     }
 
-    public int getNumLandMarks() {
+    public synchronized int getNumLandMarks() {
         return numLandMarks.get();
     }
 

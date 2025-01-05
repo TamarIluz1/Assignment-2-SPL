@@ -120,7 +120,7 @@ public class FusionSlamService extends MicroService {
             currentTime = tickBroadcast.getTick();
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
-                    if ( fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTime()){
+                    if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTime()){
                         handleEvent(trackedObjectsEvent);
                         handled.add(trackedObjectsEvent);
                 }
