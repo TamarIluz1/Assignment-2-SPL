@@ -1,7 +1,6 @@
 package bgu.spl.mics;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,7 +29,7 @@ public abstract class MicroService implements Runnable {
     private boolean terminated = false;
     private final String name;
     protected final MessageBus messageBus = MessageBusImpl.getInstance();
-    private final Map<Class<? extends Message>, ArrayList<Callback>> callbacks = new ConcurrentHashMap<>();
+    private final Map<Class<? extends Message>, ArrayList<Callback<?>>> callbacks = new ConcurrentHashMap<>();
 
 
     /**
@@ -175,7 +174,7 @@ public abstract class MicroService implements Runnable {
             while (!terminated) {
 
                 Message message = messageBus.awaitMessage(this); // getting specific event to handle
-                List<Callback> callbackList = callbacks.get(message.getClass()); 
+                ArrayList<Callback<?>> callbackList = callbacks.get(message.getClass()); 
                 // getting the order list of actions that need to happen according to the event type
                 if(callbackList != null){
                     for (Callback callback : callbackList) {

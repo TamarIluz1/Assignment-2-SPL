@@ -53,6 +53,7 @@ public class TimeService extends MicroService {
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
             System.out.println("TIME CRASHBROADCAST received, terminating TimeService.");
             GurionRockRunner.setSystemCrashed(true);
+            isTerminated = true;
             terminateTime();
         });
 
