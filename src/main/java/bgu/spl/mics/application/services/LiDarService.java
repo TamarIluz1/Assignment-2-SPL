@@ -87,7 +87,7 @@ public class LiDarService extends MicroService {
                     System.out.println("Lidar terminated at tick "+ tickBroadcast.getTick());
                     terminateService();
                 }
-                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsByTime(tickBroadcast.getTick() + liDarWorkerTracker.getFrequency());//TODO  is it the right way to get the new cloud points? Tamar 3.1
+                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsByTime(tickBroadcast.getTick() - liDarWorkerTracker.getFrequency());//TODO  is it the right way to get the new cloud points? Tamar 3.1
                 ArrayList<StampedCloudPoints> processedCloudPoints = new ArrayList<>();
                 for (StampedCloudPoints s : newCloudPoints){
                     ToProcessCloudPoints.add(s);
@@ -117,7 +117,7 @@ public class LiDarService extends MicroService {
                                 handled.add(e);
                                 // Create the tracked object
                                 processedCloudPoints.add(s);
-                                curr = new TrackedObject(d.getId(), e.getTickTime(), d.getDescripition(), s.getCloudPoints());
+                                curr = new TrackedObject(d.getId(), s.getTime(), d.getDescripition(), s.getCloudPoints());
                                 newlyTracked.add(curr);
         
                                 // Increment numTrackedObjects

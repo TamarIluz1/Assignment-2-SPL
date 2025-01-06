@@ -118,6 +118,9 @@ public class FusionSlamService extends MicroService {
             System.err.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
             ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
             currentTime = tickBroadcast.getTick();
+            if (currentTime >= 22){
+                System.out.println("DEBUG");
+            }
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
                     if (fusionSlam.getPoses().size() >= trackedObjectsEvent.getTime() & tickBroadcast.getTick() >= trackedObjectsEvent.getTime()){
