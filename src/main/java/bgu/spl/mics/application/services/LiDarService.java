@@ -17,6 +17,7 @@ import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 import bgu.spl.mics.application.objects.TrackedObject;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
@@ -100,7 +101,7 @@ public class LiDarService extends MicroService {
                     if (s.getId().equals("ERROR")){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
                         GurionRockRunner.setErorrMassage("LidarWorkerTracker" + liDarWorkerTracker.getId() + " Disconnected");
-
+                        StatisticalFolder.getInstance().setSystemRuntime(currentTick);
                         GurionRockRunner.setSystemCrashed(true);
                         GurionRockRunner.setFaultySensor("LiDar" + liDarWorkerTracker.getId());
                         sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));

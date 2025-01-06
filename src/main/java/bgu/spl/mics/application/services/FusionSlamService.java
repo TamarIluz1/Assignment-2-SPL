@@ -64,7 +64,6 @@ public class FusionSlamService extends MicroService {
                     sendBroadcast(new TerminatedBroadcast("fusionslam"));
                     terminate();
                 }
-                
             }
             
             
@@ -73,7 +72,7 @@ public class FusionSlamService extends MicroService {
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {   
             System.out.println("FusionSlamService received CrashedBroadcast.");       
-            StatisticalFolder.getInstance().setSystemRuntime(currentTime);
+            //StatisticalFolder.getInstance().setSystemRuntime(currentTime);
             terminate();
         });
 
@@ -118,8 +117,9 @@ public class FusionSlamService extends MicroService {
             System.err.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
             ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
             currentTime = tickBroadcast.getTick();
-            if (currentTime >= 22){
-                System.out.println("DEBUG");
+            if (fusionSlam.isFinished()){
+                System.out.println("EDGE CASE");
+                terminate();
             }
             if (!fusionSlam.getUnhandledTrackedObjects().isEmpty()){
                 for (TrackedObjectsEvent trackedObjectsEvent : fusionSlam.getUnhandledTrackedObjects()){
