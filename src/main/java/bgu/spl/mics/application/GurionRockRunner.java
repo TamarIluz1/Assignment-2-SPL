@@ -31,9 +31,9 @@ import bgu.spl.mics.application.objects.LandMark;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.Pose;
 import bgu.spl.mics.application.objects.STATUS;
-import bgu.spl.mics.application.objects.StampedCloudPoints;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
 import bgu.spl.mics.application.objects.StatisticalFolder;
+import bgu.spl.mics.application.objects.TrackedObject;
 import bgu.spl.mics.application.services.CameraService;
 import bgu.spl.mics.application.services.FusionSlamService;
 import bgu.spl.mics.application.services.LiDarService;
@@ -60,7 +60,7 @@ public class GurionRockRunner {
     private static final Map<String, StampedDetectedObjects> lastCamerasFrame = new HashMap<>();
 
     // For LiDar frames
-    private static final Map<String, StampedCloudPoints> lastLiDarWorkerTrackersFrame = new HashMap<>();
+    private static final Map<String, TrackedObject> lastLiDarWorkerTrackersFrame = new HashMap<>();
 
     // For final poses
     private static final List<Pose> poses = new ArrayList<>();
@@ -79,7 +79,7 @@ public class GurionRockRunner {
     public static void setErorrMassage(String msg) {errror_msg = msg;}
 
     public static Map<String, StampedDetectedObjects> getLastCamerasFrame() { return lastCamerasFrame; }
-    public static Map<String, StampedCloudPoints> getLastLiDarWorkerTrackersFrame() { return lastLiDarWorkerTrackersFrame; }
+    public static Map<String, TrackedObject> getLastLiDarWorkerTrackersFrame() { return lastLiDarWorkerTrackersFrame; }
     public static List<Pose> getPoses() { return poses; }
     public static CountDownLatch getLatch() { return latch; }
     public static boolean isSystemCrashed() { return systemCrashed; }
@@ -89,6 +89,13 @@ public class GurionRockRunner {
 
 
         String configFilePath = args[0];
+        Path configPath = Paths.get(configFilePath).toAbsolutePath();
+        Path configDir = configPath.getParent();
+        Path outputPath = configDir.resolve("output_file2.json");
+        // Use outputPath.toString() to get the string representation of the path
+        String outputFilePath = outputPath.toString();
+
+
 
         try {
             // 1) Parse config
@@ -115,7 +122,7 @@ public class GurionRockRunner {
             // 7) If crashed => error, else success
             if (systemCrashed) {
                 writeErrorOutput(
-                    "error_output.json",
+                    outputFilePath,
                     errror_msg, // or "LiDar disconnected" etc.
                     (faultySensor != null ? faultySensor : "UnknownSensor"),
                     lastCamerasFrame,
@@ -127,13 +134,13 @@ public class GurionRockRunner {
                 ArrayList<LandMark> landMarkList = fusionSlam.getLandmarks();
                 Map<String, LandMark> landMarkMap = landMarkList.stream()
                     .collect(Collectors.toMap(LandMark::getId, lm -> lm));
-                writeSuccessOutput("output_file.json", statistics, landMarkMap);
+                writeSuccessOutput(outputFilePath, statistics, landMarkMap);
             }
         }
         catch (Exception e) {
             // If main fails, produce an error
             writeErrorOutput(
-                "error_output.json",
+                outputFilePath,
                 "Exception in main: " + e.getMessage(),
                 (faultySensor != null ? faultySensor : "UnknownSensor"),
                 lastCamerasFrame,
@@ -298,7 +305,7 @@ public class GurionRockRunner {
         String errorMessage,
         String faultySensor,
         Map<String, StampedDetectedObjects> lastCamerasFrame,
-        Map<String, StampedCloudPoints> lastLiDarWorkerTrackersFrame,
+        Map<String, TrackedObject> lastLiDarWorkerTrackersFrame,
         List<Pose> poses,
         StatisticalFolder statistics
     ) {
@@ -334,9 +341,9 @@ public class GurionRockRunner {
 
             // lastLiDarWorkerTrackersFrame
             JsonObject lidarFrameJson = new JsonObject();
-            for (Map.Entry<String, StampedCloudPoints> entry : lastLiDarWorkerTrackersFrame.entrySet()) {
+            for (Map.Entry<String, TrackedObject> entry : lastLiDarWorkerTrackersFrame.entrySet()) {
                 String lidarName = entry.getKey();
-                StampedCloudPoints scpList = entry.getValue();
+                TrackedObject scpList = entry.getValue();
 
                 JsonArray scpArray = new JsonArray();
 
@@ -346,12 +353,14 @@ public class GurionRockRunner {
                 // description if you have it
 
                 JsonArray coordsArr = new JsonArray();
-                for (CloudPoint cp : scpList.getCloudPoints()) {
+                for (CloudPoint cp : scpList.getCloudPoint()) {
                     JsonObject cpObj = new JsonObject();
                     cpObj.addProperty("x", cp.getX());
                     cpObj.addProperty("y", cp.getY());
                     coordsArr.add(cpObj);
+                    
                 }
+                scpJson.addProperty("description", scpList.getDescription());
                 scpJson.add("coordinates", coordsArr);
 
                 scpArray.add(scpJson);

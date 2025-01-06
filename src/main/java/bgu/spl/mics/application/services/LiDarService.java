@@ -151,12 +151,12 @@ public class LiDarService extends MicroService {
                 for (StampedCloudPoints s : processedCloudPoints){
                     ToProcessCloudPoints.remove(s);
 
-                    String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
-                    StampedCloudPoints lastFrame = s;
-                    GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
                 }
 
                 if (!newlyTracked.isEmpty()){
+                    String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
+                    TrackedObject lastFrame = newlyTracked.get(newlyTracked.size() - 1);
+                    GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
                     sendEvent(new TrackedObjectsEvent(newlyTracked,newlyTracked.get(0).getTime()));
                 }
 
