@@ -18,7 +18,7 @@ public class StampedDetectedObjects {
         this.detectedObjects = new ArrayList<>(detectedObjects);
     }
 
-    public long getTimestamp() {
+    public int getTimestamp() {
         return time;
     }
 

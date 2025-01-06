@@ -98,7 +98,7 @@ public class CameraService extends MicroService {
                     }
 
                     GurionRockRunner.getLastCamerasFrame().put("Camera" + camera.getId(), nextDetected);
-                    sendEvent(new DetectObjectsEvent(currentTick, nextDetected));
+                    sendEvent(new DetectObjectsEvent(nextDetected.getTimestamp() , nextDetected));
                     nextDetected = camera.getNextDetectedObjects();
                 }
             }
