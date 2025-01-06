@@ -156,7 +156,7 @@ public class LiDarService extends MicroService {
                 }
 
                 if (!newlyTracked.isEmpty()){
-                    sendEvent(new TrackedObjectsEvent(newlyTracked,tickBroadcast.getTick()));
+                    sendEvent(new TrackedObjectsEvent(newlyTracked,newlyTracked.get(0).getTime()));
                 }
 
                 // if (!newCloudPoints.isEmpty() && !GurionRockRunner.isSystemCrashed() ) {
