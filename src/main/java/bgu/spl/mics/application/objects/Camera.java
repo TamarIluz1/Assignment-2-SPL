@@ -19,7 +19,7 @@ public class Camera {
       this.id = id;
       this.frequency = frequency;
       this.status = status;
-      this.detectedObjectsList = new ArrayList();
+      this.detectedObjectsList = new ArrayList<>();
       this.detectedObjectsIterator = this.detectedObjectsList.iterator();
    }
 
@@ -55,4 +55,6 @@ public class Camera {
    public StampedDetectedObjects getNextDetectedObjects() {
       return this.detectedObjectsIterator.hasNext() ? (StampedDetectedObjects)this.detectedObjectsIterator.next() : null;
    }
+
+
 }

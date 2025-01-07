@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="bgu.spl.mics.MessageBusImplTest" time="0.139" tests="6" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="bgu.spl.mics.MessageBusImplTest" time="0.107" tests="6" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="22"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -16,7 +16,7 @@
     <property name="user.country" value="US"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-22\bin"/>
-    <property name="sun.java.command" value="C:\Users\tamar\AppData\Local\Temp\surefire17678329983295393566\surefirebooter-20250105152130619_3.jar C:\Users\tamar\AppData\Local\Temp\surefire17678329983295393566 2025-01-05T15-21-30_317-jvmRun1 surefire-20250105152130619_1tmp surefire_0-20250105152130619_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\tamar\AppData\Local\Temp\surefire9854355151007709230\surefirebooter-20250106170820542_3.jar C:\Users\tamar\AppData\Local\Temp\surefire9854355151007709230 2025-01-06T17-08-20_308-jvmRun1 surefire-20250106170820542_1tmp surefire_0-20250106170820542_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="test" value="bgu.spl.mics.MessageBusImplTest"/>
     <property name="surefire.test.class.path" value="C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\target\test-classes;C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\target\classes;C:\Users\tamar\.m2\repository\com\google\code\gson\gson\2.8.9\gson-2.8.9.jar;C:\Users\tamar\.m2\repository\org\apache\commons\commons-lang3\3.12.0\commons-lang3-3.12.0.jar;C:\Users\tamar\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.11.4\junit-jupiter-api-5.11.4.jar;C:\Users\tamar\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\tamar\.m2\repository\org\junit\platform\junit-platform-commons\1.11.4\junit-platform-commons-1.11.4.jar;C:\Users\tamar\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\tamar\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.11.4\junit-jupiter-engine-5.11.4.jar;C:\Users\tamar\.m2\repository\org\junit\platform\junit-platform-engine\1.11.4\junit-platform-engine-1.11.4.jar;"/>
@@ -32,7 +32,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\tamar\AppData\Local\Temp\surefire17678329983295393566\surefirebooter-20250105152130619_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\tamar\AppData\Local\Temp\surefire9854355151007709230\surefirebooter-20250106170820542_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="22.0.1+8-16"/>
@@ -61,29 +61,10 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="66.0"/>
   </properties>
-  <testcase name="testSubscribeBroadcast" classname="bgu.spl.mics.MessageBusImplTest" time="0.055">
-    <system-out><![CDATA[TerminatedBroadcast sent to: CameraService
-CameraService received message: TerminatedBroadcast
-]]></system-out>
-  </testcase>
-  <testcase name="testMultipleSubscribersBroadcast" classname="bgu.spl.mics.MessageBusImplTest" time="0.002">
-    <system-out><![CDATA[TerminatedBroadcast sent to: CameraService
-TerminatedBroadcast sent to: CameraService
-TerminatedBroadcast sent to: CameraService
-CameraService received message: TerminatedBroadcast
-CameraService received message: TerminatedBroadcast
-]]></system-out>
-  </testcase>
-  <testcase name="testSendEventNoSubscribers" classname="bgu.spl.mics.MessageBusImplTest" time="0.002"/>
-  <testcase name="testSubscribeEvent" classname="bgu.spl.mics.MessageBusImplTest" time="0.006">
-    <system-out><![CDATA[CameraService received message: DetectObjectsEvent
-]]></system-out>
-  </testcase>
-  <testcase name="testSendBroadcastNoSubscribers" classname="bgu.spl.mics.MessageBusImplTest" time="0.006">
-    <system-out><![CDATA[TerminatedBroadcast sent to: CameraService
-TerminatedBroadcast sent to: CameraService
-TerminatedBroadcast sent to: CameraService
-]]></system-out>
-  </testcase>
-  <testcase name="testCompleteEvent" classname="bgu.spl.mics.MessageBusImplTest" time="0.004"/>
+  <testcase name="testSubscribeBroadcast" classname="bgu.spl.mics.MessageBusImplTest" time="0.045"/>
+  <testcase name="testMultipleSubscribersBroadcast" classname="bgu.spl.mics.MessageBusImplTest" time="0.002"/>
+  <testcase name="testSendEventNoSubscribers" classname="bgu.spl.mics.MessageBusImplTest" time="0.003"/>
+  <testcase name="testSubscribeEvent" classname="bgu.spl.mics.MessageBusImplTest" time="0.003"/>
+  <testcase name="testSendBroadcastNoSubscribers" classname="bgu.spl.mics.MessageBusImplTest" time="0.003"/>
+  <testcase name="testCompleteEvent" classname="bgu.spl.mics.MessageBusImplTest" time="0.003"/>
 </testsuite>

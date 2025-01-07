@@ -1,13 +1,13 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.GPSIMU;
 import bgu.spl.mics.application.objects.STATUS;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 
 /**
  * PoseService is responsible for maintaining the robot's current pose (position and orientation)
@@ -50,8 +50,6 @@ public class PoseService extends MicroService {
         });
         
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            // TODO Implement this
-            //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
             System.out.println("POSE CRASHBROADCAST received, terminating PoseService.");
             gpsimu.setStatus(STATUS.ERROR);
             terminate();
@@ -71,9 +69,9 @@ public class PoseService extends MicroService {
                 else{
                     PoseEvent event = new PoseEvent(gpsimu.getCurrentPose());
                     sendEvent(event);
+                    StatisticalFolder.getInstance().getPoses().add(gpsimu.getCurrentPose());
                     System.out.println("PoseEvent sent for tick: " + tickBroadcast.getTick());
                 
-                    GurionRockRunner.getPoses().add(gpsimu.getCurrentPose());
 
                 }
 

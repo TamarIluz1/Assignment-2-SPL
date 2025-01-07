@@ -1,0 +1,28 @@
+-------------------------------------------------------------------------------
+Test set: bgu.spl.mics.application.objects.CameraTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 0.090 s <<< FAILURE! -- in bgu.spl.mics.application.objects.CameraTest
+bgu.spl.mics.application.objects.CameraTest.testGetDataByTime -- Time elapsed: 0.053 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected time of 10 for currentTime = 10 ==> expected: <10> but was: <5>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+	at bgu.spl.mics.application.objects.CameraTest.testGetDataByTime(CameraTest.java:41)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+
+bgu.spl.mics.application.objects.CameraTest.testFetchDataIncorrectTime -- Time elapsed: 0.003 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: Expected detected objects A, B, C for currentTime = 9 ==> expected: java.util.Arrays$ArrayList@55141def<[DetectedObject{id='ObjectA', description='a'}, DetectedObject{id='ObjectB', description='b'}, DetectedObject{id='ObjectC', description='c'}]> but was: java.util.ArrayList@55182842<[DetectedObject{id='ObjectA', description='a'}, DetectedObject{id='ObjectB', description='b'}, DetectedObject{id='ObjectC', description='c'}]>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1156)
+	at bgu.spl.mics.application.objects.CameraTest.testFetchDataIncorrectTime(CameraTest.java:59)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1597)
+

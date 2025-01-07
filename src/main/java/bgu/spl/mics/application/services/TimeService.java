@@ -1,7 +1,6 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
@@ -21,7 +20,7 @@ public class TimeService extends MicroService {
      */
 
     long TickTime,Duration;
-    volatile boolean isTerminated = false;
+    private  boolean isTerminated = false;
     private Thread tickThread;
 
     
@@ -52,7 +51,6 @@ public class TimeService extends MicroService {
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             //SUBSCRIBE TO CRASHED BROADCAST 30.12 TAMAR
             System.out.println("TIME CRASHBROADCAST received, terminating TimeService.");
-            GurionRockRunner.setSystemCrashed(true);
             isTerminated = true;
             terminateTime();
         });

@@ -1,9 +1,6 @@
 package bgu.spl.mics.application.services;
 
-import bgu.spl.mics.MessageBus;
-import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -25,8 +22,8 @@ public class CameraService extends MicroService {
 
     private final  Camera camera;
 
-    private final MessageBus messageBus = MessageBusImpl.getInstance();
     private StampedDetectedObjects nextDetected;
+
 
 
     /**
@@ -41,9 +38,9 @@ public class CameraService extends MicroService {
     }
 
     public void terminateService(){
-        sendBroadcast(new TerminatedBroadcast("camera"));
-        camera.setStatus(STATUS.DOWN);
-
+        if(!camera.getStatus().equals(STATUS.ERROR)){
+            sendBroadcast(new TerminatedBroadcast("camera"));
+        }
         this.terminate();
     }
 
@@ -88,19 +85,17 @@ public class CameraService extends MicroService {
                         if (object.getId().equals("ERROR")) {
                             // Handle camera error scenario
                             camera.setStatus(STATUS.ERROR);
-                            GurionRockRunner.setSystemCrashed(true);
-                            GurionRockRunner.setFaultySensor("Camera" + camera.getId()); 
-                            GurionRockRunner.setErorrMassage(object.getDescripition());
-                            StatisticalFolder.getInstance().setSystemRuntime(currentTick);
                             // forcibly "Camera1" so the JSON matches "faultySensor": "Camera1"
-                            sendBroadcast(new CrashedBroadcast("camera " +camera.getId(), "Camera error detected at tick " + currentTick));
+                            sendBroadcast(new CrashedBroadcast("Camera " +camera.getId(), object.getDescripition()));
+                            StatisticalFolder.getInstance().setSystemRuntime(currentTick);
                             terminateService();
                             return;
                         }
-                        StatisticalFolder.getInstance().incrementDetectedObjects(1);
+                        
                     }
 
-                    GurionRockRunner.getLastCamerasFrame().put("Camera" + camera.getId(), nextDetected);
+                    StatisticalFolder.getLastCamerasFrame().put("Camera" + camera.getId(), nextDetected);
+                    StatisticalFolder.getInstance().incrementDetectedObjects(nextDetected.getDetectedObjects().size());
                     sendEvent(new DetectObjectsEvent(nextDetected.getTimestamp() , nextDetected));
                     nextDetected = camera.getNextDetectedObjects();
                 }

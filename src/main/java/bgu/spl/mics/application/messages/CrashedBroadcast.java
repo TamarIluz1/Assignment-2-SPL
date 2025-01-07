@@ -11,6 +11,14 @@ public class CrashedBroadcast implements Broadcast{
         this.message = message;
     }
 
+    public String getObjectID() {
+        return objectID;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
     @Override
     public String toString() {
         return "CrashedBroadcast of " +objectID + " with message: " + message;

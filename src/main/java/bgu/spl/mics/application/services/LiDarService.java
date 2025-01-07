@@ -1,13 +1,10 @@
 package bgu.spl.mics.application.services;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -28,7 +25,6 @@ import bgu.spl.mics.application.objects.TrackedObject;
  * observations.
  */
 public class LiDarService extends MicroService {
-    private int currentTick;
     private final MessageBus messageBus = MessageBusImpl.getInstance();
     private final LiDarWorkerTracker liDarWorkerTracker;
     //private final Set<String> trackedObjectIdsInCurrentTick = new HashSet<>();
@@ -45,8 +41,10 @@ public class LiDarService extends MicroService {
     }
     
     public void terminateService(){
-        sendBroadcast(new TerminatedBroadcast("lidar"));
-        this.terminate();
+        if(!liDarWorkerTracker.getStatus().equals(STATUS.ERROR)){
+            sendBroadcast(new TerminatedBroadcast("LidarWorkerTracker"+liDarWorkerTracker.getId()));
+        }
+        terminate();
     }
 
     /**
@@ -71,15 +69,14 @@ public class LiDarService extends MicroService {
             }
         });
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
-            //System.out.println("crashed broadcast" + crashedBroadcast.toString() + "LIDAR" + liDarWorkerTracker.getId() + "TERMINATING");
-            liDarWorkerTracker.setStatus(STATUS.ERROR);
+            System.out.println("crashed broadcast" + crashedBroadcast.toString() + "LIDAR" + liDarWorkerTracker.getId() + "TERMINATING");
+            liDarWorkerTracker.setStatus(STATUS.DOWN);
             terminateService();
         });
 
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
             // for curr tick, if there's a DetectObjectsEvent send event to FusionSlam
             //trackedObjectIdsInCurrentTick.clear(); // Clear for the new tick
-            currentTick = tickBroadcast.getTick();
             if (liDarWorkerTracker.getStatus() == STATUS.UP) {
 
                 if (liDarWorkerTracker.isFinished()){
@@ -87,7 +84,7 @@ public class LiDarService extends MicroService {
                     System.out.println("Lidar terminated at tick "+ tickBroadcast.getTick());
                     terminateService();
                 }
-                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsByTime(tickBroadcast.getTick() - liDarWorkerTracker.getFrequency());//TODO  is it the right way to get the new cloud points? Tamar 3.1
+                ArrayList<StampedCloudPoints> newCloudPoints = liDarWorkerTracker.getNewCloudPointsByTime(tickBroadcast.getTick() - liDarWorkerTracker.getFrequency());
                 ArrayList<StampedCloudPoints> processedCloudPoints = new ArrayList<>();
                 for (StampedCloudPoints s : newCloudPoints){
                     ToProcessCloudPoints.add(s);
@@ -99,11 +96,8 @@ public class LiDarService extends MicroService {
                     // if the relevant event is availiable- add the tracked objects
                     if (s.getId().equals("ERROR")){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
-                        GurionRockRunner.setErorrMassage("LidarWorkerTracker" + liDarWorkerTracker.getId() + " Disconnected");
-                        StatisticalFolder.getInstance().setSystemRuntime(currentTick);
-                        GurionRockRunner.setSystemCrashed(true);
-                        GurionRockRunner.setFaultySensor("LiDar" + liDarWorkerTracker.getId());
-                        sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
+                        StatisticalFolder.getInstance().setSystemRuntime(tickBroadcast.getTick());
+                        sendBroadcast(new CrashedBroadcast("LidarWorkerTracker"+liDarWorkerTracker.getId(), "Disconnected"));
                         terminateService();
                         return;
                     }
@@ -122,7 +116,6 @@ public class LiDarService extends MicroService {
                                 liDarWorkerTracker.addLastTrackedObject(curr);
 
         
-                                //System.out.println("LidarWorkerTracker" + liDarWorkerTracker.getId() + " detected object " + d.getId() + " at tick " + currentTick);
                             }
                         }
                     }
@@ -135,8 +128,9 @@ public class LiDarService extends MicroService {
 
                 if (!newlyTracked.isEmpty()){
                     String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
-                    TrackedObject lastFrame = newlyTracked.get(newlyTracked.size() - 1);
-                    GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
+                    TrackedObject lastFrame = newlyTracked.get(0);
+                    StatisticalFolder.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
+                    StatisticalFolder.getInstance().incrementTrackedObjects(newlyTracked.size());
                     sendEvent(new TrackedObjectsEvent(newlyTracked,newlyTracked.get(0).getTime()));
                 }
             }
