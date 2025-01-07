@@ -1,9 +1,10 @@
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\LiDarWorkerTrackerTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\TrackedObjectTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\GPSIMUTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\FusionSlamTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\MessageBusImplTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\StampedCloudPointsTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\DetectedObjectTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\PoseTest.java
-C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2\src\test\java\bgu\spl\mics\application\objects\CloudPointTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\TrackedObjectTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\CloudPointTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\MessageBusImplTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\PoseTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\StampedCloudPointsTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\LiDarWorkerTrackerTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\FusionSlamTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\CameraTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\DetectedObjectTest.java
+C:\Users\tamar\OneDrive\Documents\University\Semester 3\SPL\Assignment 2 - Copy4\src\test\java\bgu\spl\mics\application\objects\GPSIMUTest.java
