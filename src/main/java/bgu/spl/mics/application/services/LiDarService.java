@@ -111,8 +111,21 @@ public class LiDarService extends MicroService {
                     for (DetectObjectsEvent e :liDarWorkerTracker.getEventsRecieved()){
                         for (DetectedObject d : e.getObjectDetails().getDetectedObjects()){
                             
+                            // if (d.getId().equals(s.getId())){
+                            //     handled.add(e);
+                            //     processedCloudPoints.add(s);
+                            //     curr = new TrackedObject(d.getId(), s.getTime(), d.getDescripition(), s.getCloudPoints());
+                            //     newlyTracked.add(curr);
+                            //     liDarWorkerTracker.reportTracked();
+                            //     liDarWorkerTracker.addLastTrackedObject(curr);
+    
+                            // }
 
-                            if (d.getId().equals(s.getId()) && !trackedObjectIdsInCurrentTick.contains(d.getId())) {
+                            if (d.getId().equals(s.getId())) {
+                                if (trackedObjectIdsInCurrentTick.contains(d.getId())){
+                                    System.out.println("NOT ENTERED AT VARIATION, tick "+ s.getTime());
+                                    System.out.println(trackedObjectIdsInCurrentTick);
+                                }
                                 // Add to unique tracked set for the tick
                                 trackedObjectIdsInCurrentTick.add(d.getId());
                                 handled.add(e);
@@ -130,19 +143,7 @@ public class LiDarService extends MicroService {
                             }
 
 
-                            // if (d.getId().equals(s.getId())){
-                            //     if (d.getId().equals("Door")){
-                            //         System.out.println("Door detected at tick " + tickBroadcast.getTick());
-                            //     }
-                            //     // we can create the object
-                            //     handled.add(e);
-                            //     processedCloudPoints.add(s);
-                            //     curr = new TrackedObject(d.getId(), e.getTickTime(), d.getDescripition(),s.getCloudPoints());
-                            //     newlyTracked.add(curr);
-                            //     liDarWorkerTracker.reportTracked();
-                            //     System.out.println("LidarWorkerTracker" + liDarWorkerTracker.getId() + " detected object " + d.getId() + " at tick " + tickBroadcast.getTick() + " and summed to " + (StatisticalFolder.getInstance().getNumTrackedObjects())+"");
-                            //     liDarWorkerTracker.addLastTrackedObject(curr);
-                            // }
+
                             
                         }
                     }
@@ -160,11 +161,7 @@ public class LiDarService extends MicroService {
                     sendEvent(new TrackedObjectsEvent(newlyTracked,newlyTracked.get(0).getTime()));
                 }
 
-                // if (!newCloudPoints.isEmpty() && !GurionRockRunner.isSystemCrashed() ) {
-                //     String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
-                //     StampedCloudPoints lastFrame = newCloudPoints.get(newCloudPoints.size() - 1);
-                //     GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
-                // }
+
             }
             else{
                 System.out.println("LidarWorkerTracker" + liDarWorkerTracker.getId() + " terminated at tick " + tickBroadcast.getTick());
