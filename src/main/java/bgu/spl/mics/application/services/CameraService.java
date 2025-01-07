@@ -80,8 +80,9 @@ public class CameraService extends MicroService {
                     System.out.println("Camera " + camera.getId() + " terminated at tick " + currentTick);
                     terminateService();
                     return;
+                    
                 }
-                while (nextDetected.getTimestamp() + camera.getFrequency() <= currentTick ) {
+                while (nextDetected != null && nextDetected.getTimestamp() + camera.getFrequency() <= currentTick ) {
                     // invariant: if one object is an error, the whole service is terminated and the data won't be sent
                     for (DetectedObject object : nextDetected.getDetectedObjects()) {
                         if (object.getId().equals("ERROR")) {

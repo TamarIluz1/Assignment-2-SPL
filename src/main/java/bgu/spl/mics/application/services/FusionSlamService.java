@@ -51,7 +51,6 @@ public class FusionSlamService extends MicroService {
         subscribeBroadcast(TerminatedBroadcast.class, terminateBroadcast -> {
             System.out.println("FusionSlamService received TerminatedBroadcast from " + terminateBroadcast.getSender());
             if (terminateBroadcast.getSender().equals("time")){
-                System.out.println("FusionSlamService received TerminatedBroadcast from TimeService.");
                 StatisticalFolder.getInstance().setSystemRuntime(currentTime);
                 terminate();
 
@@ -71,7 +70,6 @@ public class FusionSlamService extends MicroService {
     
         // Subscribe to CrashedBroadcast: Handle system-wide crash
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {   
-            System.out.println("FusionSlamService received CrashedBroadcast.");       
             //StatisticalFolder.getInstance().setSystemRuntime(currentTime);
             terminate();
         });
@@ -95,7 +93,7 @@ public class FusionSlamService extends MicroService {
         // Subscribe to PoseEvent
         subscribeEvent(PoseEvent.class, poseEvent -> {
                 Pose pose = poseEvent.getPose();
-                System.err.println("[Fusion] got pose at time "+pose.getTime());
+                //System.err.println("[Fusion] got pose at time "+pose.getTime());
                 fusionSlam.addPose(pose); // Update the robot's pose in FusionSlam
                 complete(poseEvent, pose); // Acknowledge processing is done
                 //  we'll check if we can handle event now.
@@ -114,7 +112,7 @@ public class FusionSlamService extends MicroService {
 
         // Subscribe to TickBroadcast
         subscribeBroadcast(TickBroadcast.class, tickBroadcast -> {
-            System.err.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
+            //System.err.println("FusionSlamService received TickBroadcast at tick: " + tickBroadcast.getTick());
             ArrayList<TrackedObjectsEvent> handled = new ArrayList<>();
             currentTime = tickBroadcast.getTick();
             if (fusionSlam.isFinished()){
@@ -141,18 +139,11 @@ public class FusionSlamService extends MicroService {
     }
 
     public void handleEvent(TrackedObjectsEvent trackedObjectsEvent){
-
+        
         trackedObjectsEvent.getTrackedObject().forEach(trackedObject -> {
             String id = trackedObject.getId();
-            if (id.equals("Circular_Base_1") | trackedObjectsEvent.getTime() > 17){
-                System.err.println("Circular_Base_1");
-            }
             String description = trackedObject.getDescription();
             ArrayList<CloudPoint> trackedCoordinates = trackedObject.getCloudPoint();
-            if (id.equals("Circular_Base_1")){
-                System.err.println("Circular_Base_1");
-                //sendBroadcast(new CrashedBroadcast(id, description));
-            }
             // to transform the coordinates to the global map
 
             fusionSlam.addOrUpdateLandmark(id, description, fusionSlam.convertToGlobal(trackedCoordinates,fusionSlam.getPoseByTime(trackedObject.getTime())));
