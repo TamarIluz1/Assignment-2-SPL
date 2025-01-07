@@ -1,5 +1,8 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -14,6 +17,21 @@ public class StatisticalFolder {
     private final AtomicInteger numDetectedObjects;
     private final AtomicInteger numTrackedObjects;
     private final AtomicInteger numLandMarks;
+
+    // For camera frames
+    private static final Map<String, StampedDetectedObjects> lastCamerasFrame = new HashMap<>();
+
+    // For LiDar frames
+    private static final Map<String, TrackedObject> lastLiDarWorkerTrackersFrame = new HashMap<>();
+    
+    private static final ArrayList<Pose> poses = new ArrayList<>();
+    
+    // Setters used by services on crashes
+    
+    public static Map<String, StampedDetectedObjects> getLastCamerasFrame() { return lastCamerasFrame; }
+    public static Map<String, TrackedObject> getLastLiDarWorkerTrackersFrame() { return lastLiDarWorkerTrackersFrame; }
+    public static ArrayList<Pose> getPoses() { return poses; }
+
 
     private StatisticalFolder() {
         this.numDetectedObjects = new AtomicInteger(0);

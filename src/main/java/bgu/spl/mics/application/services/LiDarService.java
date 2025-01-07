@@ -7,7 +7,6 @@ import java.util.Set;
 import bgu.spl.mics.MessageBus;
 import bgu.spl.mics.MessageBusImpl;
 import bgu.spl.mics.MicroService;
-import bgu.spl.mics.application.GurionRockRunner;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
@@ -17,6 +16,7 @@ import bgu.spl.mics.application.objects.DetectedObject;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedCloudPoints;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 import bgu.spl.mics.application.objects.TrackedObject;
 /** PARTY OF SPL
  * LiDarService is responsible for processing data from the LiDAR sensor and
@@ -44,8 +44,10 @@ public class LiDarService extends MicroService {
     }
     
     public void terminateService(){
-        sendBroadcast(new TerminatedBroadcast("lidar"));
-        this.terminate();
+        if(!liDarWorkerTracker.getStatus().equals(STATUS.ERROR)){
+            sendBroadcast(new TerminatedBroadcast("LidarWorkerTracker"+liDarWorkerTracker.getId()));
+        }
+        terminate();
     }
 
     /**
@@ -71,7 +73,7 @@ public class LiDarService extends MicroService {
         });
         subscribeBroadcast(CrashedBroadcast.class, crashedBroadcast -> {
             System.out.println("crashed broadcast" + crashedBroadcast.toString() + "LIDAR" + liDarWorkerTracker.getId() + "TERMINATING");
-            liDarWorkerTracker.setStatus(STATUS.ERROR);
+            liDarWorkerTracker.setStatus(STATUS.DOWN);
             terminateService();
         });
 
@@ -99,11 +101,8 @@ public class LiDarService extends MicroService {
                     // if the relevant event is availiable- add the tracked objects
                     if (s.getId().equals("ERROR")){
                         liDarWorkerTracker.setStatus(STATUS.ERROR);
-                        GurionRockRunner.setErorrMassage("LidarWorkerTracker" + liDarWorkerTracker.getId() + " Disconnected");
 
-                        GurionRockRunner.setSystemCrashed(true);
-                        GurionRockRunner.setFaultySensor("LiDar" + liDarWorkerTracker.getId());
-                        sendBroadcast(new CrashedBroadcast("Lidar"+liDarWorkerTracker.getId(), "Lidar crashed at tick" + tickBroadcast.getTick()));
+                        sendBroadcast(new CrashedBroadcast("LidarWorkerTracker"+liDarWorkerTracker.getId(), "Disconnected"));
                         terminateService();
                         return;
                     }
@@ -111,7 +110,7 @@ public class LiDarService extends MicroService {
                         for (DetectedObject d : e.getObjectDetails().getDetectedObjects()){
                             
 
-                            if (d.getId().equals(s.getId()) && !trackedObjectIdsInCurrentTick.contains(d.getId())) {
+                            if (d.getId().equals(s.getId())  && !trackedObjectIdsInCurrentTick.contains(d.getId())) {
                                 // Add to unique tracked set for the tick
                                 trackedObjectIdsInCurrentTick.add(d.getId());
                                 handled.add(e);
@@ -127,6 +126,10 @@ public class LiDarService extends MicroService {
         
                                 System.out.println("LidarWorkerTracker" + liDarWorkerTracker.getId() + " detected object " + d.getId() + " at tick " + currentTick);
                             }
+
+
+
+
 
 
                             // if (d.getId().equals(s.getId())){
@@ -154,8 +157,9 @@ public class LiDarService extends MicroService {
 
                 if (!newlyTracked.isEmpty()){
                     String workerName = "LiDarWorkerTracker" + liDarWorkerTracker.getId();
-                    TrackedObject lastFrame = newlyTracked.get(newlyTracked.size() - 1);
-                    GurionRockRunner.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
+                    TrackedObject lastFrame = newlyTracked.get(0);
+                    StatisticalFolder.getLastLiDarWorkerTrackersFrame().put(workerName, lastFrame);
+                    StatisticalFolder.getInstance().incrementTrackedObjects(newlyTracked.size());
                     sendEvent(new TrackedObjectsEvent(newlyTracked,newlyTracked.get(0).getTime()));
                 }
 

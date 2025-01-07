@@ -12,6 +12,9 @@ public class FusionSlam {
     Object terminatedCounterLock= new Object();
     ArrayList<TrackedObjectsEvent> unhandledTrackedObjects;
     int sensorAmount; 
+
+
+
     private FusionSlam() {
         this.landmarks = new CopyOnWriteArrayList<>();
         this.poses = new ArrayList<>();

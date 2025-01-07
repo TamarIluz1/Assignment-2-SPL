@@ -55,4 +55,6 @@ public class Camera {
    public StampedDetectedObjects getNextDetectedObjects() {
       return this.detectedObjectsIterator.hasNext() ? (StampedDetectedObjects)this.detectedObjectsIterator.next() : null;
    }
+
+
 }

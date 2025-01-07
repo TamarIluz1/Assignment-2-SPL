@@ -71,7 +71,7 @@ public class LiDarDataBase {
 
     public StampedCloudPoints fetchCloudPoints(int tickTime, String id){
         for (StampedCloudPoints s : cloudPointsDB){
-            if (s.getId().equals(id) & s.getTime() == tickTime){
+            if (s.getId().equals(id) && s.getTime() == tickTime){
                 return s;
             }
         }
